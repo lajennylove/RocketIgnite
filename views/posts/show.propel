@@ -1,0 +1,18 @@
+@extends('layouts.app')
+
+@section('title')
+  {{ $post.title }}
+@endsection
+
+@section('content')
+  <p><a href="/posts">All posts</a></p>
+  <article>
+    <h1>{{ $post.title }}</h1>
+    @if ($post.published_at)
+      <time>{{ $post.published_at }}</time>
+    @else
+      <p>Draft: not published yet. This is the <code>@@else</code> branch of an <code>@@if</code>.</p>
+    @endif
+    <p>{{ $post.body }}</p>
+  </article>
+@endsection
