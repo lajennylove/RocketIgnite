@@ -58,6 +58,7 @@ mod author;
 mod reports;
 mod views_dir;
 mod migrate;
+mod order;
 mod mount;
 mod schema;
 mod tag;
@@ -71,10 +72,19 @@ fn rocket() -&gt; rocket::Rocket&lt;rocket::Build&gt; {
             .resource::&lt;article::Article&gt;()
             .resource::&lt;tag::Tag&gt;()
             .resource::&lt;author::Author&gt;()
+            .csrf_exempt(&amp;["/hooks/*"])
             .mount("/admin")
             .fairing(),
     )
-    .mount("/", rocket::routes![reports::account])
+    .mount(
+        "/",
+        rocket::routes![
+            reports::account,
+            order::checkout,
+            order::place_order,
+            order::payment_hook
+        ],
+    )
 }</code></pre>
 
   <h2>Create the first user</h2>

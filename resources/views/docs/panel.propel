@@ -43,7 +43,7 @@ pub fn panel() -&gt; Ignite {
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
 
   <h2>Forgery protection</h2>
-  <p>Each browser has a token, held in the signed <code>ignite_csrf</code> cookie and created on the first panel page it renders. Every panel form carries it as a hidden <code>_token</code> field. Sign-in, sign-out, log out everywhere, create, update and delete check the token before they do anything. A missing or wrong token gets status 419 and a Page Expired page. Your app's own POST routes are not covered, and need their own check.</p>
+  <p>Each browser has a token, held in the signed <code>ignite_csrf</code> cookie and created on the first panel page it renders. Every panel form carries it as a hidden <code>_token</code> field. Sign-in, sign-out, log out everywhere, create, update and delete check the token before they do anything. A missing or wrong token gets status 419 and a Page Expired page. Your app's own routes are checked the same way, as the next section shows.</p>
 
   <h2>Login throttle</h2>
   <p>Each failed sign-in counts against its email, five per 60 seconds, and against its IP address, twenty per 60 seconds. The counts are kept in the <code>login_throttles</code> table, so they hold across restarts and processes. While either count is at its limit, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. A successful sign-in clears the email's count. Requests whose address is unknown share one IP count.</p>
@@ -70,6 +70,58 @@ pub fn account(session: AdminUser) -&gt; PropelView {
         },
     )
 }</code></pre>
+
+  <h2>Forms of your own</h2>
+  <p>An app route that takes a form checks the panel's token. Its data guard is <code>ignite_panel::CsrfForm</code>, which reads <code>_token</code> from the form, or the <code>X-CSRF-TOKEN</code> header, and answers 419 when it is missing or wrong. The page gets the token from <code>ignite_panel::CsrfToken</code>, and writes it into a hidden field. The guard covers POST, PUT, PATCH and DELETE routes.</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_panel::{CsrfForm, CsrfToken};
+use propel_rocket::PropelView;
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct Checkout {
+    pub csrf_token: String,
+}
+
+/// The form page. The token comes from the request guard, and the view writes
+/// it into a hidden `_token` field.
+#[rocket::get("/checkout")]
+pub fn checkout(token: CsrfToken) -&gt; PropelView {
+    PropelView::render(
+        "checkout",
+        &amp;Checkout {
+            csrf_token: token.value().to_string(),
+        },
+    )
+}
+
+/// The form's POST route. `CsrfForm` checks the token before the handler runs,
+/// and answers 419 when it is missing or wrong.
+#[rocket::post("/checkout", data = "&lt;form&gt;")]
+pub fn place_order(form: CsrfForm) -&gt; String {
+    form.get("item").unwrap_or_default().to_string()
+}
+
+/// A webhook from another service. It has no form token, so the app exempts
+/// `/hooks/*` in the builder.
+#[rocket::post("/hooks/payment")]
+pub fn payment_hook() -&gt; &amp;'static str {
+    "ok"
+}</code></pre>
+  <p>The form writes the token from its context:</p>
+  <pre class="line-numbers"><code class="language-blade">@@extends('layouts.app')
+
+@@section('title')
+  Checkout
+@@endsection
+
+@@section('content')
+  &lt;form method="post" action="/checkout"&gt;
+    &lt;input type="hidden" name="_token" value="@{{ $csrf_token }}"&gt;
+    &lt;input type="text" name="item"&gt;
+    &lt;button type="submit"&gt;Order&lt;/button&gt;
+  &lt;/form&gt;
+@@endsection</code></pre>
+  <p>A route that receives webhooks from another service has no form token. Name its path in the builder with <code>csrf_exempt</code>, as <code>.csrf_exempt(&amp;["/hooks/*"])</code> does here. A path ending in <code>/*</code> covers everything under it. The panel's own routes are always checked.</p>
 
   <h2>Messages</h2>
   <p>After a change, the panel shows a message on the next page. See <a href="/docs/notifications">Notifications</a>.</p>

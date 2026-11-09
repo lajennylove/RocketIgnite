@@ -33,7 +33,7 @@
   <p>A password field is never filled in on the edit page. On create, a password is required. On edit, a blank password keeps the stored hash, and a new one is hashed with argon2 on save. A hand-written resource hashes with <code>ignite_core::hash_password</code> itself, and overrides <code>validate_update</code> to allow a blank password on edit. See <a href="/docs/resources#passwords">Resources</a>.</p>
 
   <h2>Forms and tokens</h2>
-  <p>Every panel form carries a hidden <code>_token</code> field, which the panel checks on submit. A form that was open too long shows the Page Expired page, with status 419, and nothing is saved. See <a href="/docs/panel">Panel</a>.</p>
+  <p>Every panel form carries a hidden <code>_token</code> field, which the panel checks on submit. An app's own forms do the same, with <code>CsrfForm</code>. See <a href="/docs/panel">Panel</a>. A form that was open too long shows the Page Expired page, with status 419, and nothing is saved. See <a href="/docs/panel">Panel</a>.</p>
 
   <h2>Not built yet</h2>
   <ul>
