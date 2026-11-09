@@ -7,7 +7,7 @@ Status: the panel, the resources, the derive and the dashboard, with its latest-
 ## Dependencies
 
 - Rocket: git revision `3a54d079`
-- Propel: git revision `ce0c8a2223e0a730992e43bbfddc81e16fad3f13` (`propel_rocket`)
+- Propel: git revision `81b97ce213bbedc3992823e846f0d6689eeb602d` (`propel_rocket`)
 - Diesel: git fork `lajennylove/diesel` at `a07c4b2c20a466ef34f50ca283790f4df20b0699`
 
 ## Run

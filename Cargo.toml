@@ -6,7 +6,7 @@ publish = false
 
 [dependencies]
 rocket = { git = "https://github.com/rwf2/Rocket", rev = "3a54d079" }
-propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "ce0c8a2223e0a730992e43bbfddc81e16fad3f13" }
+propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "81b97ce213bbedc3992823e846f0d6689eeb602d" }
 serde = { version = "1", features = ["derive"] }
 
 [workspace]

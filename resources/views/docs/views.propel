@@ -41,8 +41,8 @@
   <p>An app cannot replace one of the panel's views on its own. The only way to change a panel view is to point the panel at a directory, which replaces all of them.</p>
 
   <h2>Where the views come from</h2>
-  <p>The panel's views are embedded in the <code>ignite-panel</code> binary, so a deployed app needs no view files. Propel still renders them at runtime.</p>
-  <p>To edit the views on disk without rebuilding, point the panel at a directory. <code>Ignite::views_dir</code> does this in the builder, and the <code>IGNITE_VIEWS_DIR</code> environment variable does the same from the environment. The builder call wins over the variable. The directory replaces all of the panel's views, not one view at a time, and it must contain <code>layouts/app.propel</code>. <code>fairing()</code> panics when that file is missing.</p>
+  <p>A debug build renders the panel's views with Propel's dev renderer, which reads them on each request. A release build renders compiled views only: the panel's build script compiles the four panel views, the dashboard, the form, the index and the login, into Rust. Both builds embed the views in the <code>ignite-panel</code> binary, so the default needs no view files.</p>
+  <p>In a debug build, <code>Ignite::views_dir</code> does this in the builder, and the <code>IGNITE_VIEWS_DIR</code> environment variable does the same from the environment. The builder call wins over the variable. The directory makes the dev renderer read the views from disk, so a developer can edit them without rebuilding. It replaces all of the panel's views, and it must contain <code>layouts/app.propel</code>. <code>fairing()</code> panics when that file is missing. A release build ignores both.</p>
   <pre class="line-numbers"><code class="language-rust">use ignite_panel::Ignite;
 
 /// The panel with its views read from a directory on disk, so the views can be
@@ -50,4 +50,5 @@
 pub fn panel() -&gt; Ignite {
     Ignite::new().views_dir("/srv/ignite/views")
 }</code></pre>
+  <p>An app that renders its own views in release compiles them with its own <code>build.rs</code>, as the panel does, and its page contexts are plain structs.</p>
 @endsection

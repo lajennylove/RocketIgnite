@@ -31,7 +31,7 @@ pub fn panel() -&gt; Ignite {
   <ul>
     <li><code>DATABASE_URL</code>, a <code>mysql://</code> URL. The panel panics at startup if it is missing or the database cannot be reached.</li>
     <li><code>IGNITE_SECRET_KEY</code>, a base64 string of 32 bytes. It signs the sign-in and flash cookies. Create one with <code>openssl rand -base64 32</code>. A release build stops at startup without a valid key. A debug build uses a random key for that run, with a warning, so sign-ins end when the app restarts.</li>
-    <li><code>IGNITE_VIEWS_DIR</code>, a folder of the panel's views that replaces the embedded ones, for editing views without a rebuild. See <a href="/docs/views">Views</a>.</li>
+    <li><code>IGNITE_VIEWS_DIR</code>, a folder of the panel's views that replaces the embedded ones, for editing views without a rebuild. It works in debug builds only; a release build ignores it. See <a href="/docs/views">Views</a>.</li>
   </ul>
 
   <h2>Sign-in</h2>
