@@ -6,11 +6,12 @@ publish = false
 
 [dependencies]
 rocket = { git = "https://github.com/rwf2/Rocket", rev = "3a54d079" }
-propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "81b97ce213bbedc3992823e846f0d6689eeb602d" }
-propel_runtime = { git = "https://github.com/lajennylove/propel", rev = "81b97ce213bbedc3992823e846f0d6689eeb602d" }
+propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "e0fb10893095a4b66996d35efb45cf0dd466ccdd" }
+propel_runtime = { git = "https://github.com/lajennylove/propel", rev = "e0fb10893095a4b66996d35efb45cf0dd466ccdd" }
+propel_macros = { git = "https://github.com/lajennylove/propel", rev = "e0fb10893095a4b66996d35efb45cf0dd466ccdd" }
 serde = { version = "1", features = ["derive"] }
 
 [build-dependencies]
-propel_compiler = { git = "https://github.com/lajennylove/propel", rev = "81b97ce213bbedc3992823e846f0d6689eeb602d" }
+propel_compiler = { git = "https://github.com/lajennylove/propel", rev = "e0fb10893095a4b66996d35efb45cf0dd466ccdd" }
 
 [workspace]

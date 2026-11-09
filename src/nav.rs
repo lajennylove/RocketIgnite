@@ -4,15 +4,8 @@
 
 use serde::Serialize;
 
-/// A link is present when it exists. `@if ($pager.prev)` reads an `Option<Link>`
-/// through this impl, because Propel at this revision needs one for a struct.
-impl propel_runtime::support::Truthy for Link {
-    fn truthy(&self) -> bool {
-        true
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
+/// A link is true when it exists, so `@if ($pager.prev)` reads an `Option<Link>`.
+#[derive(Debug, Clone, Serialize, propel_macros::Truthy)]
 pub struct Link {
     pub href: String,
     pub label: String,

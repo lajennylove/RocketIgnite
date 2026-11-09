@@ -971,16 +971,27 @@ dependencies = [
 [[package]]
 name = "propel_compiler"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=81b97ce213bbedc3992823e846f0d6689eeb602d#81b97ce213bbedc3992823e846f0d6689eeb602d"
+source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
 dependencies = [
  "propel_parser",
  "propel_runtime",
 ]
 
 [[package]]
+name = "propel_macros"
+version = "0.1.0"
+source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
+dependencies = [
+ "proc-macro2",
+ "propel_compiler",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "propel_parser"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=81b97ce213bbedc3992823e846f0d6689eeb602d#81b97ce213bbedc3992823e846f0d6689eeb602d"
+source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
 dependencies = [
  "pest",
  "pest_derive",
@@ -989,7 +1000,7 @@ dependencies = [
 [[package]]
 name = "propel_rocket"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=81b97ce213bbedc3992823e846f0d6689eeb602d#81b97ce213bbedc3992823e846f0d6689eeb602d"
+source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
 dependencies = [
  "propel_runtime",
  "rocket",
@@ -999,7 +1010,7 @@ dependencies = [
 [[package]]
 name = "propel_runtime"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=81b97ce213bbedc3992823e846f0d6689eeb602d#81b97ce213bbedc3992823e846f0d6689eeb602d"
+source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
 dependencies = [
  "propel_parser",
  "serde",
@@ -1201,6 +1212,7 @@ name = "rocket-ignite"
 version = "0.0.0"
 dependencies = [
  "propel_compiler",
+ "propel_macros",
  "propel_rocket",
  "propel_runtime",
  "rocket",
