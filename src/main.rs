@@ -4,13 +4,12 @@ extern crate rocket;
 mod nav;
 mod views;
 
-use nav::Page;
+use nav::DocPage;
 
 use propel_rocket::PropelView;
 use rocket::fs::FileServer;
 use rocket::http::Status;
 use rocket::response::Redirect;
-use views::*;
 
 #[get("/")]
 fn home() -> Redirect {
@@ -24,9 +23,9 @@ fn docs(page: &str) -> Result<PropelView, (Status, PropelView)> {
     let path = format!("/docs/{page}");
 
     match nav::title(&path) {
-        Some(title) => Ok(PropelView::render(
+        Some(title) => Ok(views::render_page(
             &format!("docs.{page}"),
-            &Page::new(&path, Article { title }),
+            &DocPage::new(&path, &title),
         )),
         None => Err(not_found_page()),
     }
@@ -35,7 +34,7 @@ fn docs(page: &str) -> Result<PropelView, (Status, PropelView)> {
 fn not_found_page() -> (Status, PropelView) {
     (
         Status::NotFound,
-        PropelView::render("errors.not_found", &Page::new("", NoFields {})),
+        views::render_page("errors.not_found", &DocPage::new("", "Not found")),
     )
 }
 

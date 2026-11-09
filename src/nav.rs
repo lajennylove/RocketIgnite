@@ -4,6 +4,14 @@
 
 use serde::Serialize;
 
+/// A link is present when it exists. `@if ($pager.prev)` reads an `Option<Link>`
+/// through this impl, because Propel at this revision needs one for a struct.
+impl propel_runtime::support::Truthy for Link {
+    fn truthy(&self) -> bool {
+        true
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Link {
     pub href: String,
@@ -70,19 +78,20 @@ pub fn title(path: &str) -> Option<String> {
         .map(|link| link.label)
 }
 
-/// A page's own data, plus the navigation every layout needs.
+/// The context of every documentation page. The layout reads `title`, `nav` and
+/// `pager` as top-level fields, because a compiled view reads each field as
+/// `ctx.field`.
 #[derive(Debug, Serialize)]
-pub struct Page<C> {
-    #[serde(flatten)]
-    pub content: C,
+pub struct DocPage {
+    pub title: String,
     pub nav: Vec<Group>,
     pub pager: Pager,
 }
 
-impl<C: Serialize> Page<C> {
+impl DocPage {
     /// `path` is the page's address. Only pages in the sidebar get a previous
     /// and a next link.
-    pub fn new(path: &str, content: C) -> Self {
+    pub fn new(path: &str, title: &str) -> Self {
         let nav = groups();
         let links: Vec<Link> = nav.iter().flat_map(|group| group.links.clone()).collect();
         let index = links.iter().position(|link| link.href == path);
@@ -94,8 +103,8 @@ impl<C: Serialize> Page<C> {
             next: index.and_then(|i| links.get(i + 1).cloned()),
         };
 
-        Page {
-            content,
+        DocPage {
+            title: title.into(),
             nav,
             pager,
         }

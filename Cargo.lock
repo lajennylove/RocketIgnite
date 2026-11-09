@@ -969,6 +969,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "propel_compiler"
+version = "0.1.0"
+source = "git+https://github.com/lajennylove/propel?rev=81b97ce213bbedc3992823e846f0d6689eeb602d#81b97ce213bbedc3992823e846f0d6689eeb602d"
+dependencies = [
+ "propel_parser",
+ "propel_runtime",
+]
+
+[[package]]
 name = "propel_parser"
 version = "0.1.0"
 source = "git+https://github.com/lajennylove/propel?rev=81b97ce213bbedc3992823e846f0d6689eeb602d#81b97ce213bbedc3992823e846f0d6689eeb602d"
@@ -1191,7 +1200,9 @@ dependencies = [
 name = "rocket-ignite"
 version = "0.0.0"
 dependencies = [
+ "propel_compiler",
  "propel_rocket",
+ "propel_runtime",
  "rocket",
  "serde",
 ]
