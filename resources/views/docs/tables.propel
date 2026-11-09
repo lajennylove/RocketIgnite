@@ -26,6 +26,5 @@
   <h2>Not built yet</h2>
   <ul>
     <li><strong>Filters and bulk actions.</strong> The list has a search box only.</li>
-    <li><strong>A table of the latest records.</strong> The dashboard shows stat cards only. See <a href="/docs/widgets">Widgets</a>.</li>
   </ul>
 @endsection

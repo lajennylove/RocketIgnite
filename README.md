@@ -2,12 +2,13 @@
 
 The documentation site for [Ignite](https://github.com/lajennylove/Ignite), an admin panel for Rocket.rs. Built on Rocket and [Propel](https://github.com/lajennylove/propel) views, with Tailwind and Vite for the assets.
 
-Status: the panel, the resources, the derive and the dashboard are documented. The pages say what is not built yet, such as CSRF protection and a table of the latest records.
+Status: the panel, the resources, the derive and the dashboard, with its latest-records tables, are documented. The pages say what is not built yet, such as CSRF protection.
 
 ## Dependencies
 
 - Rocket: git revision `3a54d079`
-- Propel: git revision `1853048` (`propel_rocket`)
+- Propel: git revision `ce0c8a2223e0a730992e43bbfddc81e16fad3f13` (`propel_rocket`)
+- Diesel: git fork `lajennylove/diesel` at `a07c4b2c20a466ef34f50ca283790f4df20b0699`
 
 ## Run
 

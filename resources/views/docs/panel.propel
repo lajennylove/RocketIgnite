@@ -31,7 +31,7 @@ pub fn panel() -&gt; Ignite {
   <ul>
     <li><code>DATABASE_URL</code>, a <code>mysql://</code> URL. The panel panics at startup if it is missing or the database cannot be reached.</li>
     <li><code>IGNITE_SECRET_KEY</code>, a base64 string of 32 bytes. It signs the sign-in and flash cookies. Create one with <code>openssl rand -base64 32</code>. A release build stops at startup without a valid key. A debug build uses a random key for that run, with a warning, so sign-ins end when the app restarts.</li>
-    <li><code>IGNITE_VIEWS_DIR</code>, the folder of the panel's views, for a deployed app. See <a href="/docs/views">Views</a>.</li>
+    <li><code>IGNITE_VIEWS_DIR</code>, a folder of the panel's views that replaces the embedded ones, for editing views without a rebuild. See <a href="/docs/views">Views</a>.</li>
   </ul>
 
   <h2>Sign-in</h2>
@@ -42,8 +42,8 @@ pub fn panel() -&gt; Ignite {
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
 
   <h2>Your own pages</h2>
-  <p>A route of the app under the panel's address can require a sign-in. Take <code>ignite_panel::Session</code> as an argument, and it is a request guard: without a session the request redirects to the sign-in page. <code>user_id()</code> returns the signed-in user's id. This route renders the view in <a href="/docs/views">Views</a>:</p>
-  <pre class="line-numbers"><code class="language-rust">use ignite_panel::Session;
+  <p>A route of the app under the panel's address can require a sign-in. Take <code>ignite_panel::AdminUser</code> as an argument, and it is a request guard: without a session the request redirects to the sign-in page. <code>user_id()</code> returns the signed-in user's id. This route renders the view in <a href="/docs/views">Views</a>:</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_panel::AdminUser;
 use propel_rocket::PropelView;
 use serde::Serialize;
 
@@ -52,10 +52,10 @@ pub struct Account {
     pub user_id: i64,
 }
 
-/// An app page under the panel's mount. The `Session` guard redirects to the
+/// An app page under the panel's mount. The `AdminUser` guard redirects to the
 /// sign-in page when nobody is signed in.
 #[rocket::get("/admin/account")]
-pub fn account(session: Session) -&gt; PropelView {
+pub fn account(session: AdminUser) -&gt; PropelView {
     PropelView::render(
         "account",
         &amp;Account {

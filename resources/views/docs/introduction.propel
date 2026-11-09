@@ -7,7 +7,7 @@
 @section('content')
   <h1>Ignite</h1>
   <p>Ignite is an admin panel for <a href="https://rocket.rs">Rocket</a>, the Rust web framework. Give it a MariaDB or MySQL table and it builds a back office for that table: a login page, a dashboard, and screens to list, search, sort, create, edit and delete its rows.</p>
-  <p><strong>Status.</strong> Ignite is in development. The panel, the resources, the derive and the dashboard are built. Some features are not: CSRF protection and a table of the latest records, for example. Each page on this site says what is built and what is not.</p>
+  <p><strong>Status.</strong> Ignite is in development. The panel, the resources, the derive and the dashboard, with its stat cards and tables of the latest records, are built. Some features are not: CSRF protection, for example. Each page on this site says what is built and what is not.</p>
 
   <h2>What Ignite is</h2>
   <ul>
@@ -22,7 +22,7 @@
     <li>Infolists, a read-only view of one record.</li>
     <li>Several panels, themes and translations.</li>
     <li>Relations between tables, file uploads, filters and bulk actions.</li>
-    <li>Charts. The widgets are stat cards.</li>
+    <li>Charts. The widgets are stat cards and tables of the newest records.</li>
   </ul>
   <p>Ignite also supports MariaDB and MySQL only.</p>
 

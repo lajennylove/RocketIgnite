@@ -6,23 +6,27 @@
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>The dashboard, at <code>/admin</code>, shows stat cards. A resource adds its cards by implementing the <code>widgets</code> method of the trait.</p>
+  <p>The dashboard, at <code>/admin</code>, shows two kinds of block for each resource: stat cards, and a table of the newest records. A resource adds them by implementing methods of the trait.</p>
 
-  <h2>A stat card</h2>
+  <h2>Stat cards</h2>
   <p>A card is a <code>StatWidget</code>: a label, such as <code>Tags</code>, and a whole-number value. The dashboard shows the cards of every resource, in the order the resources are passed to the panel builder, and each resource's cards in the order its <code>widgets</code> method returns them.</p>
-
-  <h2>Add a card</h2>
-  <p>The <code>Tag</code> resource in <a href="/docs/resources">Resources</a> implements the method. It counts the rows of its table and returns one card.</p>
-  <p>The method has this signature: <code>fn widgets(conn: &amp;mut MysqlConnection) -> QueryResult&lt;Vec&lt;StatWidget&gt;&gt;</code>. It runs on a connection from the pool, so it can use any Diesel query. The default returns no cards.</p>
-  <p>A derived resource cannot add cards yet. The derive writes the whole trait impl, so a resource that needs cards is written by hand.</p>
-
-  <h2>An empty dashboard</h2>
+  <p>The <code>widgets</code> method has this signature: <code>fn widgets(conn: &amp;mut MysqlConnection) -> QueryResult&lt;Vec&lt;StatWidget&gt;&gt;</code>. It runs on a connection from the pool, so it can use any Diesel query. The default returns no cards.</p>
   <p>When no resource has cards, the dashboard says <code>No stats yet.</code> and tells the developer to implement <code>widgets</code>.</p>
+
+  <h2>Latest records</h2>
+  <p>A resource declares a table of its newest records with <code>latest_records</code>, which returns a <code>LatestRecords</code> or <code>None</code>:</p>
+  <ul>
+    <li><code>title</code>, the heading of the table, such as <code>Latest tags</code>.</li>
+    <li><code>columns</code>, the keys of the resource's columns to show, in order.</li>
+    <li><code>limit</code>, the most records to show. The panel shows at least one.</li>
+  </ul>
+  <p>The rows come from the resource's <code>latest</code> method, which the panel calls with the declared limit. It must return the newest records first. A cell shows its value the way the list does, so a date reads as <code>1 Mar 2026</code> and a boolean as <code>Yes</code> or <code>No</code>. A column key that is not one of the resource's columns shows its name as the heading, with empty cells. A table with no records says <code>No records yet.</code>.</p>
+  <p>The <code>Tag</code> resource in <a href="/docs/resources">Resources</a> declares this table, with the five newest tags, and implements <code>latest</code> for it.</p>
+  <p>A derived resource cannot declare the table. The derive writes <code>latest</code>, which orders by the primary key, descending, but not <code>latest_records</code>. A resource that shows the table is written by hand.</p>
 
   <h2>Not built yet</h2>
   <ul>
-    <li><strong>A table of the latest records.</strong> The dashboard shows stat cards only.</li>
     <li><strong>Charts.</strong> Charts are out of scope for v1.</li>
-    <li><strong>Links and ordering.</strong> A card does not link anywhere, and the order is fixed by the resources' order.</li>
+    <li><strong>Links and ordering.</strong> A card or a table does not link anywhere, and the order is fixed by the resources' order.</li>
   </ul>
 @endsection

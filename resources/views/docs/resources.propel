@@ -54,7 +54,7 @@ pub struct Article {
     <li><code>hidden_on_index</code>, which leaves the column out of the list. The list shows every other field, including the <code>id</code>, unless you hide it.</li>
   </ul>
   <p>The supported field types are <code>String</code>, <code>i32</code>, <code>i64</code>, <code>bool</code> and <code>chrono::NaiveDate</code>, and an <code>Option</code> of any of them. The derive also writes an input struct named after the model with <code>Input</code> added, here <code>ArticleInput</code>, which holds the validated form values.</p>
-  <p>The derive writes the whole trait impl, so it cannot write dashboard cards, which need a hand-written <code>widgets</code> method. It also has no <code>select</code> field kind. See <a href="/docs/widgets">Widgets</a> and <a href="/docs/forms">Forms</a>.</p>
+  <p>The derive writes the whole trait impl, so a derived resource has three limits. It cannot write dashboard cards, which need a hand-written <code>widgets</code> method. It cannot declare the dashboard table of the newest records, which needs a hand-written <code>latest_records</code>, although it does write <code>latest</code>. And it has no <code>select</code> field kind. See <a href="/docs/widgets">Widgets</a> and <a href="/docs/forms">Forms</a>.</p>
 
   <h2 id="passwords">Passwords</h2>
   <p>A field with <code>form_type = "password"</code> is hashed on save. This model keeps the login of an author:</p>
@@ -78,13 +78,13 @@ pub struct Author {
   <p>The derive stores the argon2 hash from <code>ignite_core::hash_password</code>, the same function the panel's sign-in uses. The password is required on create. On edit, a blank password is optional, and it keeps the stored hash. Password fields are not list columns, and the edit form never shows the stored value. The derive refuses a password field that is not a <code>String</code> or an <code>Option</code> of one, at compile time.</p>
 
   <h2>Write a resource by hand</h2>
-  <p>A hand-written resource implements the trait itself. This one manages a <code>tags</code> table with a choice field, a search and a sort, and a dashboard card:</p>
+  <p>A hand-written resource implements the trait itself. This one manages a <code>tags</code> table with a choice field, a search and a sort, a dashboard card and a dashboard table of its newest tags:</p>
   <pre class="line-numbers"><code class="language-rust">use diesel::prelude::*;
 use diesel::result::QueryResult;
 use diesel::sql_types::BigInt;
 use ignite_core::{
     escape_like, Column, Direction, Field, FieldErrors, FieldKind, FormInput, IgniteResource,
-    ListQuery, Page, StatWidget,
+    LatestRecords, ListQuery, Page, StatWidget,
 };
 use serde::Serialize;
 
@@ -135,6 +135,22 @@ impl IgniteResource for Tag {
             label: "Tags",
             value: total,
         }])
+    }
+
+    fn latest_records() -&gt; Option&lt;LatestRecords&gt; {
+        Some(LatestRecords {
+            title: "Latest tags",
+            columns: &amp;["name", "kind"],
+            limit: 5,
+        })
+    }
+
+    fn latest(conn: &amp;mut MysqlConnection, limit: i64) -&gt; QueryResult&lt;Vec&lt;TagRecord&gt;&gt; {
+        tags::table
+            .order(tags::id.desc())
+            .limit(limit)
+            .select(TagRecord::as_select())
+            .load(conn)
     }
 
     fn fields() -&gt; &amp;'static [Field] {
@@ -232,7 +248,7 @@ impl IgniteResource for Tag {
     <li><code>find</code>, <code>create</code>, <code>update</code> and <code>delete</code>, which work on one row. <code>create</code> and <code>update</code> take the validated <code>Input</code> and return the row as the <code>Record</code>.</li>
     <li><code>validate</code>, which turns the submitted form into the <code>Input</code>, or returns an error message for each field. Call <code>check_required</code> for each required field.</li>
     <li><code>validate_update</code>, which does the same for an edit. It defaults to <code>validate</code>. Override it when a field may be blank on edit.</li>
-    <li><code>widgets</code>, the dashboard cards. See <a href="/docs/widgets">Widgets</a>.</li>
+    <li><code>widgets</code>, the dashboard cards, and <code>latest_records</code> with <code>latest</code>, the dashboard table of the newest records. See <a href="/docs/widgets">Widgets</a>.</li>
   </ul>
   <p>A hand-written resource with a password must hash it with <code>ignite_core::hash_password</code> itself, and override <code>validate_update</code> so that a blank password keeps the stored hash on edit.</p>
   <p>The <code>Record</code> is what the database returns. It must serialize to JSON with an <code>id</code> key holding the primary key as a number, and with keys named after the fields and columns. The panel builds the row links from <code>id</code>.</p>
