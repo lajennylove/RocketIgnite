@@ -6,7 +6,7 @@ Status: the panel, the resources, the derive and the dashboard, with its latest-
 
 ## Dependencies
 
-- Ignite: the site documents commit `154c17c2218d30b1b03e64bbe78c1b07f5ee79a1`
+- Ignite: the site documents commit `dc0309470d3f1426a1d5cfaca20fffa288cabd51`
 - Rocket: git revision `3a54d079`
 - Propel: git revision `e0fb10893095a4b66996d35efb45cf0dd466ccdd` (`propel_rocket`)
 - Diesel: git fork `lajennylove/diesel` at `a07c4b2c20a466ef34f50ca283790f4df20b0699`
