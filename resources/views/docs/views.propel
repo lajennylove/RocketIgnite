@@ -67,12 +67,5 @@ fn main() {
         .view("subscribe", "crate::subscribe::Subscribe")
         .build();
 }</code></pre>
-  <p>The panel's stylesheet and script are the <code>ui</code> asset namespace. Its layout loads them with <code>@@vite(['ui::resources/css/app.css', 'ui::resources/js/app.js'])</code>, so a view that extends the layout is styled with no step in the view. The app adds the namespace once, to the <code>Assets</code> that its page helper returns, and declares it in its build script with <code>.asset_namespace("ui")</code>:</p>
-  <pre class="line-numbers"><code class="language-rust">use propel_runtime::Assets;
-
-/// The app's assets: its own `public` directory, and the panel's build as the `ui`
-/// namespace. The panel's layout loads its stylesheet and script from `ui`.
-pub fn app_assets() -&gt; Assets {
-    Assets::new("public").namespace("ui", ignite_panel::panel_source("/admin"))
-}</code></pre>
+  <p>The panel registers its own stylesheet and script, the <code>ui</code> asset namespace, so an app needs no asset step: not in a page helper, not in a view's context. A view that extends the layout is compiled into the app's build, and the layout names <code>ui::</code>, so the app's build script declares the namespace with <code>.asset_namespace("ui")</code>, as the example's build script does. The build fails without that line.</p>
 @endsection

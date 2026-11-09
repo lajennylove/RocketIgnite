@@ -19,7 +19,7 @@
   <p>Ignite, its docs and its example use the same versions of these crates:</p>
   <ul>
     <li>Rocket, from git, at revision <code>3a54d079</code>.</li>
-    <li>Propel, <code>propel_rocket</code>, from git, at the full revision <code>5c2884f52b2d38eae63fb8eda088b81f19f547fe</code>. A short revision makes Cargo build two copies. Propel renders the panel's views.</li>
+    <li>Propel, <code>propel_rocket</code>, from git, at the full revision <code>71ecd1c0c9676db74ce0c90ea3578a12fc043f21</code>. A short revision makes Cargo build two copies. Propel renders the panel's views.</li>
     <li>Diesel, from a fork, at the full commit <code>a07c4b2c20a466ef34f50ca283790f4df20b0699</code>. The fork is Diesel 2.3.14 with one fix, for libmariadb 3.4, which returned an empty first row for some text queries.</li>
   </ul>
 
@@ -27,18 +27,17 @@
   <p>Add Ignite to <code>Cargo.toml</code>, pinned to a commit you have tested. Use the same Rocket, Propel and Diesel pins as Ignite, so the app builds one copy of each:</p>
   <pre class="line-numbers"><code class="language-toml"># The Ignite commit this site documents.
 [dependencies]
-ignite-panel = { git = "https://github.com/lajennylove/Ignite", rev = "39ea29313731788c83e97ff942e532243428eee1" }
-ignite-core = { git = "https://github.com/lajennylove/Ignite", rev = "39ea29313731788c83e97ff942e532243428eee1" }
+ignite-panel = { git = "https://github.com/lajennylove/Ignite", rev = "265cb1df1bccc7d8a343b5fa300027e28b8d011d" }
+ignite-core = { git = "https://github.com/lajennylove/Ignite", rev = "265cb1df1bccc7d8a343b5fa300027e28b8d011d" }
 rocket = { git = "https://github.com/rwf2/Rocket", rev = "3a54d079" }
-propel_runtime = { git = "https://github.com/lajennylove/propel", rev = "5c2884f52b2d38eae63fb8eda088b81f19f547fe" }
-propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "5c2884f52b2d38eae63fb8eda088b81f19f547fe" }
+propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "71ecd1c0c9676db74ce0c90ea3578a12fc043f21" }
 diesel = { git = "https://github.com/lajennylove/diesel", rev = "a07c4b2c20a466ef34f50ca283790f4df20b0699", features = ["mysql", "r2d2", "chrono"] }
 serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
 
 [build-dependencies]
-propel_compiler = { git = "https://github.com/lajennylove/propel", rev = "5c2884f52b2d38eae63fb8eda088b81f19f547fe" }</code></pre>
+propel_compiler = { git = "https://github.com/lajennylove/propel", rev = "71ecd1c0c9676db74ce0c90ea3578a12fc043f21" }</code></pre>
   <p>The derive writes paths that start with <code>ignite_core</code>, so the app needs that crate too. A date field needs <code>chrono</code> with its <code>serde</code> feature. The app's CLI binary uses <code>dotenvy</code> to read <code>.env</code>.</p>
   <p>Apps pin the same Diesel fork and commit, so no <code>[patch]</code> line is needed.</p>
 
@@ -59,7 +58,6 @@ pub fn migrate(url: &amp;str) -&gt; Result&lt;(), Box&lt;dyn std::error::Error +
   <h2>Attach the panel</h2>
   <p>Attach the panel to the Rocket build with the resources the app manages. The panel's routes mount when the app starts, under <code>/admin</code>. The app's own <code>account</code> route is guarded by the panel's <code>AdminUser</code>. See <a href="/docs/panel">Panel</a>:</p>
   <pre class="line-numbers"><code class="language-rust">mod article;
-mod assets;
 mod author;
 mod reports;
 mod views_dir;
