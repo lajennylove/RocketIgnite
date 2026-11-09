@@ -50,7 +50,7 @@
 pub fn panel() -&gt; Ignite {
     Ignite::new().views_dir("/srv/ignite/views")
 }</code></pre>
-  <p>An app that renders its own views in release compiles them with its own <code>build.rs</code>, as the panel does, and its page contexts are plain structs. The app's views can extend the panel's layout, <code>ignite::layouts.app</code>. The panel publishes its views directory to the apps that depend on it, through the <code>links</code> key in its manifest, so the app's build script finds it in <code>DEP_IGNITE_PANEL_VIEWS_DIR</code> and compiles the panel's layout with the app's views. The app needs <code>propel_compiler</code> as a build dependency at the same Propel pin. The example app's build script does this:</p>
+  <p>An app that renders its own views in release compiles them with its own <code>build.rs</code>, as the panel does, and its page contexts are plain structs. The app's views can extend the panel's layout, <code>ignite::layouts.app</code>. The panel publishes its views directory to the apps that depend on it, through the <code>links</code> key in its manifest, so the app's build script finds it in <code>DEP_IGNITE_PANEL_VIEWS_DIR</code> and compiles the panel's layout with the app's views. The app needs <code>propel_compiler</code> as a build dependency at the same Propel pin. The contract describes this rule in its Views section, and the example app's build script does this:</p>
   <pre class="line-numbers"><code class="language-rust">//! Compiles the app's views into Rust, so a release build renders them without a
 //! template interpreter. The panel's own views are compiled too, because the
 //! app's views extend its layout (`ignite::layouts.app`).
