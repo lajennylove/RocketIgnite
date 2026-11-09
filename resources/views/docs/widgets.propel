@@ -6,6 +6,23 @@
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>Widgets are the blocks on the dashboard. This page covers the stat cards and how a resource adds them to the dashboard.</p>
-  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+  <p>The dashboard, at <code>/admin</code>, shows stat cards. A resource adds its cards by implementing the <code>widgets</code> method of the trait.</p>
+
+  <h2>A stat card</h2>
+  <p>A card is a <code>StatWidget</code>: a label, such as <code>Tags</code>, and a whole-number value. The dashboard shows the cards of every resource, in the order the resources are passed to the panel builder, and each resource's cards in the order its <code>widgets</code> method returns them.</p>
+
+  <h2>Add a card</h2>
+  <p>The <code>Tag</code> resource in <a href="/docs/resources">Resources</a> implements the method. It counts the rows of its table and returns one card.</p>
+  <p>The method has this signature: <code>fn widgets(conn: &amp;mut MysqlConnection) -> QueryResult&lt;Vec&lt;StatWidget&gt;&gt;</code>. It runs on a connection from the pool, so it can use any Diesel query. The default returns no cards.</p>
+  <p>A derived resource cannot add cards yet. The derive writes the whole trait impl, so a resource that needs cards is written by hand.</p>
+
+  <h2>An empty dashboard</h2>
+  <p>When no resource has cards, the dashboard says <code>No stats yet.</code> and tells the developer to implement <code>widgets</code>.</p>
+
+  <h2>Not built yet</h2>
+  <ul>
+    <li><strong>A table of the latest records.</strong> The dashboard shows stat cards only.</li>
+    <li><strong>Charts.</strong> Charts are out of scope for v1.</li>
+    <li><strong>Links and ordering.</strong> A card does not link anywhere, and the order is fixed by the resources' order.</li>
+  </ul>
 @endsection

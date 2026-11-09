@@ -6,6 +6,38 @@
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>The panel is drawn by views in the <code>ignite</code> namespace. This page covers how an app extends the panel layout with <code>@@extends('ignite::layouts.app')</code>.</p>
-  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+  <p>The panel's screens are Propel views in the <code>ignite</code> namespace. The app can extend the panel's layout in its own views, which live in <code>resources/views/</code>.</p>
+
+  <h2>The ignite namespace</h2>
+  <p><code>Ignite::new()</code> registers the <code>ignite</code> namespace. The views in it are:</p>
+  <ul>
+    <li><code>ignite::layouts.app</code>, the page frame, with the navigation and the header.</li>
+    <li><code>ignite::login</code>, the sign-in page.</li>
+    <li><code>ignite::dashboard</code>, the stat cards.</li>
+    <li><code>ignite::index</code>, the list of a resource.</li>
+    <li><code>ignite::form</code>, the create and edit pages.</li>
+    <li><code>ignite::partials.flash</code>, the message shown after a change.</li>
+  </ul>
+
+  <h2>Extend the layout</h2>
+  <p>A view of the app extends the panel's layout, and fills its two sections, <code>title</code> and <code>content</code>:</p>
+  <pre class="line-numbers"><code class="language-blade">@@extends('ignite::layouts.app')
+
+@@section('title')
+  Reports
+@@endsection
+
+@@section('content')
+  &lt;h1&gt;Reports&lt;/h1&gt;
+  &lt;p&gt;A page of the app, shown inside the panel.&lt;/p&gt;
+@@endsection</code></pre>
+  <p>Save this as <code>resources/views/reports.propel</code>. A route renders it with the view name <code>reports</code>, which is the file name without the extension.</p>
+  <p>The panel's session guard is not public, so a route of your own under <code>/admin</code> is open to anyone unless it checks the session itself.</p>
+
+  <h2>What the layout offers</h2>
+  <p>The panel layout yields only <code>title</code> and <code>content</code>. A page cannot add a stylesheet, a script or a navigation link to the panel's frame yet.</p>
+  <p>The panel does not let an app replace one of its own views. In v1, only the sections above can change.</p>
+
+  <h2>Where the views are read from</h2>
+  <p>The panel reads its views from the <code>views/ignite</code> folder of the Ignite source, at the path the crate was built from. A deployed app must still have that folder at that path, so the app and its Ignite checkout should be deployed together.</p>
 @endsection

@@ -6,6 +6,26 @@
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>A table is the list view of a resource. This page covers its columns, search, sorting and paging.</p>
-  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+  <p>The list page of a resource is its table. It shows one row per record, with a column for each entry in the resource's <code>columns</code>, and a search box, sortable headings and a pager.</p>
+
+  <h2>Columns</h2>
+  <p>Each column has a key, a label, and two flags: <code>sortable</code>, which makes its heading a sort link, and <code>searchable</code>, which makes the search box match it. The key must match a key of the record. A cell shows the text of the value: a boolean shows <code>Yes</code> or <code>No</code>, and an empty value shows nothing.</p>
+
+  <h2>Search</h2>
+  <p>The search box sends the text as <code>q</code>. The resource matches the text against each searchable column, with a <code>LIKE</code> pattern that has the text on both sides, and joins the matches with OR. A <code>%</code> or <code>_</code> the user types is matched literally. If no column is searchable, the search has no effect. Whether the match ignores case depends on the database's collation.</p>
+
+  <h2>Sort</h2>
+  <p>A sortable heading is a link. The first click sorts ascending, and the next click sorts descending. An arrow shows the direction. The panel accepts a sort only on a sortable column, and ignores any other key in <code>sort</code>. With no sort, rows come in primary key order.</p>
+
+  <h2>Paging</h2>
+  <p>A list page shows <code>PER_PAGE</code> rows, which is 20 by default. The pager shows <code>Previous</code> and <code>Next</code> links, and a line such as <code>Page 2 of 5 · 93 in total</code>. A page number below 1 shows the first page. A page past the last shows no rows and the message <code>No records found.</code></p>
+
+  <h2>Row actions</h2>
+  <p>Each row has an Edit link and a Delete button. See <a href="/docs/actions">Actions</a>.</p>
+
+  <h2>Not built yet</h2>
+  <ul>
+    <li><strong>Filters and bulk actions.</strong> The list has a search box only.</li>
+    <li><strong>A table of the latest records.</strong> The dashboard shows stat cards only. See <a href="/docs/widgets">Widgets</a>.</li>
+  </ul>
 @endsection

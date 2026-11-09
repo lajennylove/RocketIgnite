@@ -6,6 +6,45 @@
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>The panel is the admin area of the app. This page covers its path, its configuration, the login and the session, and the flash messages that confirm each change.</p>
-  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+  <p>The panel is the admin area of the app: its address, its configuration, its sign-in, and the messages it shows after a change.</p>
+
+  <h2>Address</h2>
+  <p>The panel mounts under <code>/admin</code>. The <code>mount</code> method changes the address, with or without a trailing slash:</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_panel::Ignite;
+
+/// The panel at its own address, instead of the default `/admin`.
+pub fn panel() -&gt; Ignite {
+    Ignite::new().mount("/backoffice")
+}</code></pre>
+  <p>The panel's routes are:</p>
+  <ul>
+    <li><code>GET /admin</code>, the dashboard.</li>
+    <li><code>GET /admin/login</code>, <code>POST /admin/login</code> and <code>POST /admin/logout</code>, for sign-in and sign-out.</li>
+    <li><code>GET /admin/&lt;slug&gt;</code>, the list of a resource, with <code>q</code>, <code>sort</code>, <code>dir</code> and <code>page</code> in the query string.</li>
+    <li><code>GET /admin/&lt;slug&gt;/new</code> and <code>POST /admin/&lt;slug&gt;</code>, to create a row.</li>
+    <li><code>GET /admin/&lt;slug&gt;/&lt;id&gt;/edit</code> and <code>POST /admin/&lt;slug&gt;/&lt;id&gt;</code>, to update a row.</li>
+    <li><code>POST /admin/&lt;slug&gt;/&lt;id&gt;/delete</code>, to delete a row.</li>
+  </ul>
+
+  <h2>Configuration</h2>
+  <p>Two environment variables matter:</p>
+  <ul>
+    <li><code>DATABASE_URL</code>, a <code>mysql://</code> URL. The panel panics at startup if it is missing or the database cannot be reached.</li>
+    <li><code>IGNITE_SECRET_KEY</code>, a base64 string of 32 bytes. It signs the sign-in and flash cookies. Create one with <code>openssl rand -base64 32</code>. A release build stops at startup without a valid key. A debug build uses a random key for that run, with a warning, so sign-ins end when the app restarts.</li>
+  </ul>
+
+  <h2>Sign-in</h2>
+  <p>The panel's users live in the <code>users</code> table, which the panel owns: an id, a name, an email address that must be unique, a password hash and a creation time. Passwords are hashed with argon2.</p>
+  <p>Sign in at <code>/admin/login</code>. A wrong email or password shows the same message for both, so the page does not reveal which emails are registered. Signing in sets a signed session cookie. Sign out with the button in the header, which posts to <code>/admin/logout</code>.</p>
+  <p>Every page under the panel needs a session, except sign-in and sign-out. Without one, the request redirects to <code>/admin/login</code>.</p>
+  <p>The panel has no sign-up page, no password reset, no remember-me and no roles. To add a user, use the command-line tool in <a href="/docs/install">Installation</a>:</p>
+  <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
+
+  <h2>Messages</h2>
+  <p>After a change, the panel shows a message on the next page. See <a href="/docs/notifications">Notifications</a>.</p>
+
+  <h2>Not built yet</h2>
+  <ul>
+    <li><strong>CSRF protection.</strong> The forms carry no token yet, so another site could submit a form to the panel while you are signed in.</li>
+  </ul>
 @endsection

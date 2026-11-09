@@ -6,6 +6,34 @@
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>A form is how a resource takes input for create and edit. This page covers the field kinds, validation and required fields.</p>
-  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+  <p>The new and edit pages draw a form from the resource's <code>fields</code>. When the form is submitted, the resource's <code>validate</code> method turns the values into its input, or returns a message for each field.</p>
+
+  <h2>Field kinds</h2>
+  <p>Each field has a kind, which sets the input and how the value is read:</p>
+  <ul>
+    <li><code>Text</code>, a single-line text input.</li>
+    <li><code>Textarea</code>, a multi-line text input.</li>
+    <li><code>Password</code>, a password input. The form never fills it in, not even on edit.</li>
+    <li><code>Number</code>, a number input. The value is read as text, and the resource parses it.</li>
+    <li><code>Checkbox</code>, a tick box. A tick sends <code>on</code>, and an empty box sends nothing, so the value is false.</li>
+    <li><code>Select</code>, a list of <code>(value, label)</code> choices.</li>
+    <li><code>Date</code>, a date input. The value is read as <code>YYYY-MM-DD</code>.</li>
+  </ul>
+  <p>A hand-written resource can use every kind. The derive can use all of them except <code>Select</code>, and it reads a <code>Password</code> field as text.</p>
+  <p>The panel does not check a <code>Select</code> value against its choices. The resource's <code>validate</code> must do that.</p>
+
+  <h2>Required fields</h2>
+  <p>A field marked <code>required</code> shows an asterisk after its label. The asterisk is only a hint: the resource's <code>validate</code> must reject a blank value. The derive does this for you, and a hand-written resource calls <code>check_required</code>, which trims the value and records the message <code>&lt;label&gt; is required.</code> if it is blank.</p>
+
+  <h2>Validation errors</h2>
+  <p>When <code>validate</code> returns errors, the panel shows the form again with the values the user typed, a message under each field that has one, and the status 422. Nothing is written to the database. A derived field that cannot be read, such as a number that is not a whole number, gets its own message, such as <code>Price must be a whole number.</code></p>
+
+  <h2>Password fields</h2>
+  <p>A password field is never filled in on the edit page. A blank password is rejected when the field is required, which the derive makes the default for a <code>String</code>. A hand-written <code>validate</code> can keep the stored password when the field is blank, and hash the new one when it is not. The panel hashes nothing itself.</p>
+
+  <h2>Not built yet</h2>
+  <ul>
+    <li><strong>CSRF protection.</strong> The forms carry no token yet. See <a href="/docs/panel">Panel</a>.</li>
+    <li><strong>Help text and file fields.</strong> A field has a label and a kind. There is no help text, and no upload.</li>
+  </ul>
 @endsection
