@@ -971,7 +971,7 @@ dependencies = [
 [[package]]
 name = "propel_compiler"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
+source = "git+https://github.com/lajennylove/propel?rev=5c2884f52b2d38eae63fb8eda088b81f19f547fe#5c2884f52b2d38eae63fb8eda088b81f19f547fe"
 dependencies = [
  "propel_parser",
  "propel_runtime",
@@ -980,7 +980,7 @@ dependencies = [
 [[package]]
 name = "propel_macros"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
+source = "git+https://github.com/lajennylove/propel?rev=5c2884f52b2d38eae63fb8eda088b81f19f547fe#5c2884f52b2d38eae63fb8eda088b81f19f547fe"
 dependencies = [
  "proc-macro2",
  "propel_compiler",
@@ -991,7 +991,7 @@ dependencies = [
 [[package]]
 name = "propel_parser"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
+source = "git+https://github.com/lajennylove/propel?rev=5c2884f52b2d38eae63fb8eda088b81f19f547fe#5c2884f52b2d38eae63fb8eda088b81f19f547fe"
 dependencies = [
  "pest",
  "pest_derive",
@@ -1000,7 +1000,7 @@ dependencies = [
 [[package]]
 name = "propel_rocket"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
+source = "git+https://github.com/lajennylove/propel?rev=5c2884f52b2d38eae63fb8eda088b81f19f547fe#5c2884f52b2d38eae63fb8eda088b81f19f547fe"
 dependencies = [
  "propel_runtime",
  "rocket",
@@ -1010,7 +1010,7 @@ dependencies = [
 [[package]]
 name = "propel_runtime"
 version = "0.1.0"
-source = "git+https://github.com/lajennylove/propel?rev=e0fb10893095a4b66996d35efb45cf0dd466ccdd#e0fb10893095a4b66996d35efb45cf0dd466ccdd"
+source = "git+https://github.com/lajennylove/propel?rev=5c2884f52b2d38eae63fb8eda088b81f19f547fe#5c2884f52b2d38eae63fb8eda088b81f19f547fe"
 dependencies = [
  "propel_parser",
  "serde",
