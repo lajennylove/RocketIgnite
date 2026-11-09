@@ -39,7 +39,7 @@
         </svg>
       </label>
       <a href="/" class="flex items-center gap-2 font-bold text-heading no-underline hover:no-underline">
-        <img src="{{ asset('resources/images/ignite-mark.png') }}" alt="" class="h-10 w-auto">
+        <img src="{{ asset('resources/images/ignite-mark.webp') }}" alt="" class="h-10 w-auto">
         Ignite
       </a>
       <span class="hidden truncate text-[15px] text-text md:inline">Admin panel for Rocket.rs</span>

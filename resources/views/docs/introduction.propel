@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-  <img src="{{ asset('resources/images/ignite-logo.png') }}" alt="RocketBoost Ignite" class="mx-auto mb-8 block w-full max-w-[632px]">
+  <img src="{{ asset('resources/images/ignite-logo.webp') }}" alt="RocketBoost Ignite" class="mx-auto mb-8 block w-full max-w-[632px]" width="632" height="516" fetchpriority="high">
   <h1>Ignite</h1>
   <p>Ignite is an admin panel for <a href="https://rocket.rs">Rocket</a>, the Rust web framework. Give it a MariaDB or MySQL table and it builds a back office for that table: a login page, a dashboard, and screens to list, search, sort, create, edit and delete its rows.</p>
   <p><strong>Status.</strong> Ignite is in development. The panel, the resources, the derive, the dashboard with its stat cards and tables of the latest records, and the sign-in protections (server-side sessions, form tokens and login throttling), with the same token check on an app's own form routes, are built. Some features are not yet, such as filters and bulk actions. Each page on this site says what is built and what is not.</p>

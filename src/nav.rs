@@ -8,7 +8,7 @@ use crate::SITE_URL;
 
 /// The social card. The build copies `resources/images` to `public/build`
 /// under its own path, so the file is at this address.
-const OG_IMAGE: &str = "/build/resources/images/og-image.png";
+const OG_IMAGE: &str = "/build/resources/images/og-image.jpg";
 
 /// A link is true when it exists, so `@if ($pager.prev)` reads an `Option<Link>`.
 #[derive(Debug, Clone, Serialize, propel_macros::Truthy)]
