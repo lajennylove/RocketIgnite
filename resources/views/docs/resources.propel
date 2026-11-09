@@ -9,13 +9,14 @@
   <p>A resource connects a database table to the panel. The panel lists, creates, edits and deletes its rows. A resource is a Rust type that implements the <code>IgniteResource</code> trait. You can write the impl by hand, or let <code>#[derive(IgniteResource)]</code> write it from a Diesel model.</p>
 
   <h2>Address and name</h2>
-  <p>Three constants name the resource:</p>
+  <p>Four constants name the resource:</p>
   <ul>
     <li><code>SLUG</code> is the URL segment. A slug of <code>articles</code> mounts the resource at <code>/admin/articles</code>. Two resources cannot share a slug.</li>
-    <li><code>TITLE</code> is the heading and the navigation label, such as <code>Articles</code>.</li>
+    <li><code>TITLE</code> is the heading of the list and the navigation label, such as <code>Articles</code>.</li>
+    <li><code>SINGULAR</code> is the name of one record, used in the headings <code>New Tag</code> and <code>Edit Tag #3</code>. It defaults to <code>Record</code>, so a hand-written resource should set it.</li>
     <li><code>PER_PAGE</code> is the number of rows on a list page. It is 20 unless you change it, as in <code>const PER_PAGE: i64 = 50;</code>.</li>
   </ul>
-  <p>The derive takes the slug from the table name, and the title from the table name with a capital letter, unless you set <code>title</code>.</p>
+  <p>The derive takes the slug from the table name, and the title from the table name with a capital letter, unless you set <code>title</code>. The singular name is the title without a trailing <code>s</code>, unless you set <code>singular</code>.</p>
 
   <h2>Derive a resource</h2>
   <p>The derive reads a Diesel model. The model also derives <code>Queryable</code>, <code>Selectable</code> and <code>Serialize</code>, because the derive does not write them. This model has a <code>title</code> that is searchable and sortable, and a <code>body</code> that is a multi-line field and hidden from the list:</p>
@@ -40,19 +41,41 @@ pub struct Article {
   <p>The struct attributes are:</p>
   <ul>
     <li><code>table</code>, the Diesel table module. Required.</li>
-    <li><code>title</code>, the heading. Defaults to the table name, capitalized.</li>
+    <li><code>title</code>, the heading of the list. Defaults to the table name, capitalized.</li>
+    <li><code>singular</code>, the name of one record, for the headings. Defaults to the title without a trailing <code>s</code>.</li>
   </ul>
   <p>The field attributes are:</p>
   <ul>
     <li><code>primary_key</code>, for a key that is not named <code>id</code>. The key must be an <code>i32</code> or an <code>i64</code>. It is left out of the form.</li>
     <li><code>label</code>, the label on the form and the column heading. Defaults to the field name, capitalized, with underscores as spaces.</li>
-    <li><code>form_type</code>, one of <code>text</code>, <code>textarea</code>, <code>password</code>, <code>number</code>, <code>checkbox</code> or <code>date</code>. Defaults from the type: text for <code>String</code>, number for <code>i32</code> and <code>i64</code>, checkbox for <code>bool</code>, and date for <code>chrono::NaiveDate</code>.</li>
+    <li><code>form_type</code>, one of <code>text</code>, <code>textarea</code>, <code>password</code>, <code>number</code>, <code>checkbox</code> or <code>date</code>. Defaults from the type: text for <code>String</code>, number for <code>i32</code> and <code>i64</code>, checkbox for <code>bool</code>, and date for <code>chrono::NaiveDate</code>. A <code>password</code> must be a <code>String</code>. See <a href="#passwords">Passwords</a>.</li>
     <li><code>required</code>, or <code>required = false</code>. A field that is not an <code>Option</code> is required by default, and a <code>bool</code> is never blank.</li>
     <li><code>searchable</code> and <code>sortable</code>, for the search box and the column headings. See <a href="/docs/tables">Tables</a>.</li>
     <li><code>hidden_on_index</code>, which leaves the column out of the list. The list shows every other field, including the <code>id</code>, unless you hide it.</li>
   </ul>
   <p>The supported field types are <code>String</code>, <code>i32</code>, <code>i64</code>, <code>bool</code> and <code>chrono::NaiveDate</code>, and an <code>Option</code> of any of them. The derive also writes an input struct named after the model with <code>Input</code> added, here <code>ArticleInput</code>, which holds the validated form values.</p>
-  <p>The derive writes the whole trait impl, so it has three limits. It writes no dashboard cards, so a resource that needs them is written by hand. It does not offer the <code>select</code> field kind. And it does not hash a <code>password</code> field: the value is stored as the form sends it.</p>
+  <p>The derive writes the whole trait impl, so it cannot write dashboard cards, which need a hand-written <code>widgets</code> method. It also has no <code>select</code> field kind. See <a href="/docs/widgets">Widgets</a> and <a href="/docs/forms">Forms</a>.</p>
+
+  <h2 id="passwords">Passwords</h2>
+  <p>A field with <code>form_type = "password"</code> is hashed on save. This model keeps the login of an author:</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_core::IgniteResource;
+use serde::Serialize;
+
+use crate::schema;
+
+/// The password is hashed on save. It is required on create, and a blank
+/// value on edit keeps the stored hash.
+#[derive(diesel::Queryable, diesel::Selectable, Serialize, IgniteResource)]
+#[diesel(table_name = schema::authors)]
+#[ignite(table = schema::authors, title = "Authors", singular = "Author")]
+pub struct Author {
+    pub id: i64,
+    #[ignite(searchable, sortable)]
+    pub name: String,
+    #[ignite(form_type = "password")]
+    pub password: String,
+}</code></pre>
+  <p>The derive stores the argon2 hash from <code>ignite_core::hash_password</code>, the same function the panel's sign-in uses. The password is required on create. On edit, a blank password is optional, and it keeps the stored hash. Password fields are not list columns, and the edit form never shows the stored value. The derive refuses a password field that is not a <code>String</code> or an <code>Option</code> of one, at compile time.</p>
 
   <h2>Write a resource by hand</h2>
   <p>A hand-written resource implements the trait itself. This one manages a <code>tags</code> table with a choice field, a search and a sort, and a dashboard card:</p>
@@ -104,6 +127,7 @@ impl IgniteResource for Tag {
 
     const SLUG: &amp;'static str = "tags";
     const TITLE: &amp;'static str = "Tags";
+    const SINGULAR: &amp;'static str = "Tag";
 
     fn widgets(conn: &amp;mut MysqlConnection) -&gt; QueryResult&lt;Vec&lt;StatWidget&gt;&gt; {
         let total: i64 = tags::table.count().get_result(conn)?;
@@ -207,10 +231,12 @@ impl IgniteResource for Tag {
     <li><code>list</code>, which returns one page of rows for a <code>ListQuery</code>, with the total count. It must apply the search and the sort the query asks for, and it should sort by the primary key when no sort is given.</li>
     <li><code>find</code>, <code>create</code>, <code>update</code> and <code>delete</code>, which work on one row. <code>create</code> and <code>update</code> take the validated <code>Input</code> and return the row as the <code>Record</code>.</li>
     <li><code>validate</code>, which turns the submitted form into the <code>Input</code>, or returns an error message for each field. Call <code>check_required</code> for each required field.</li>
+    <li><code>validate_update</code>, which does the same for an edit. It defaults to <code>validate</code>. Override it when a field may be blank on edit.</li>
     <li><code>widgets</code>, the dashboard cards. See <a href="/docs/widgets">Widgets</a>.</li>
   </ul>
+  <p>A hand-written resource with a password must hash it with <code>ignite_core::hash_password</code> itself, and override <code>validate_update</code> so that a blank password keeps the stored hash on edit.</p>
   <p>The <code>Record</code> is what the database returns. It must serialize to JSON with an <code>id</code> key holding the primary key as a number, and with keys named after the fields and columns. The panel builds the row links from <code>id</code>.</p>
 
   <h2>Add it to the panel</h2>
-  <p>Pass each resource type to the panel builder, as <a href="/docs/install">Installation</a> shows: <code>.resource::&lt;Article&gt;()</code> and <code>.resource::&lt;Tag&gt;()</code>.</p>
+  <p>Pass each resource type to the panel builder, as <a href="/docs/install">Installation</a> shows: <code>.resource::&lt;Article&gt;()</code>, <code>.resource::&lt;Tag&gt;()</code> and <code>.resource::&lt;Author&gt;()</code>.</p>
 @endsection

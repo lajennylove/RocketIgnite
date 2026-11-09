@@ -20,6 +20,8 @@
   <h2>Form errors</h2>
   <p>A form that does not validate shows its messages under the fields, and keeps the values the user typed. See <a href="/docs/forms">Forms</a>.</p>
 
+  <p>A value that clashes with a unique index, such as a second user with the same email, shows <code>Email is already taken.</code> under its field. See <a href="/docs/forms">Forms</a>.</p>
+
   <h2>Sign-in errors</h2>
   <p>A wrong email or password shows <code>The email or password is incorrect.</code> on the sign-in page. See <a href="/docs/panel">Panel</a>.</p>
 

@@ -6,7 +6,7 @@
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>The new and edit pages draw a form from the resource's <code>fields</code>. When the form is submitted, the resource's <code>validate</code> method turns the values into its input, or returns a message for each field.</p>
+  <p>The new and edit pages draw a form from the resource's <code>fields</code>. When the form is submitted, the resource's <code>validate</code> method, or <code>validate_update</code> on an edit, turns the values into its input, or returns a message for each field.</p>
 
   <h2>Field kinds</h2>
   <p>Each field has a kind, which sets the input and how the value is read:</p>
@@ -19,7 +19,7 @@
     <li><code>Select</code>, a list of <code>(value, label)</code> choices.</li>
     <li><code>Date</code>, a date input. The value is read as <code>YYYY-MM-DD</code>.</li>
   </ul>
-  <p>A hand-written resource can use every kind. The derive can use all of them except <code>Select</code>, and it reads a <code>Password</code> field as text.</p>
+  <p>A hand-written resource can use every kind. The derive can use all of them except <code>Select</code>. A derived password field is a <code>String</code>, and it is hashed on save. See <a href="/docs/resources#passwords">Resources</a>.</p>
   <p>The panel does not check a <code>Select</code> value against its choices. The resource's <code>validate</code> must do that.</p>
 
   <h2>Required fields</h2>
@@ -27,9 +27,10 @@
 
   <h2>Validation errors</h2>
   <p>When <code>validate</code> returns errors, the panel shows the form again with the values the user typed, a message under each field that has one, and the status 422. Nothing is written to the database. A derived field that cannot be read, such as a number that is not a whole number, gets its own message, such as <code>Price must be a whole number.</code></p>
+  <p>A value that clashes with a unique index is also a field error. A second user with the same email, for example, shows <code>Email is already taken.</code> under the email field, with the status 422. Any other database error is a 500.</p>
 
-  <h2>Password fields</h2>
-  <p>A password field is never filled in on the edit page. A blank password is rejected when the field is required, which the derive makes the default for a <code>String</code>. A hand-written <code>validate</code> can keep the stored password when the field is blank, and hash the new one when it is not. The panel hashes nothing itself.</p>
+  <h2>Passwords</h2>
+  <p>A password field is never filled in on the edit page. On create, a password is required. On edit, a blank password keeps the stored hash, and a new one is hashed with argon2 on save. A hand-written resource hashes with <code>ignite_core::hash_password</code> itself, and overrides <code>validate_update</code> to allow a blank password on edit. See <a href="/docs/resources#passwords">Resources</a>.</p>
 
   <h2>Not built yet</h2>
   <ul>

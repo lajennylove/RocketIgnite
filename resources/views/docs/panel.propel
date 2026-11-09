@@ -27,18 +27,42 @@ pub fn panel() -&gt; Ignite {
   </ul>
 
   <h2>Configuration</h2>
-  <p>Two environment variables matter:</p>
+  <p>These environment variables matter. They can come from the environment or from a <code>.env</code> file in development:</p>
   <ul>
     <li><code>DATABASE_URL</code>, a <code>mysql://</code> URL. The panel panics at startup if it is missing or the database cannot be reached.</li>
     <li><code>IGNITE_SECRET_KEY</code>, a base64 string of 32 bytes. It signs the sign-in and flash cookies. Create one with <code>openssl rand -base64 32</code>. A release build stops at startup without a valid key. A debug build uses a random key for that run, with a warning, so sign-ins end when the app restarts.</li>
+    <li><code>IGNITE_VIEWS_DIR</code>, the folder of the panel's views, for a deployed app. See <a href="/docs/views">Views</a>.</li>
   </ul>
 
   <h2>Sign-in</h2>
   <p>The panel's users live in the <code>users</code> table, which the panel owns: an id, a name, an email address that must be unique, a password hash and a creation time. Passwords are hashed with argon2.</p>
   <p>Sign in at <code>/admin/login</code>. A wrong email or password shows the same message for both, so the page does not reveal which emails are registered. Signing in sets a signed session cookie. Sign out with the button in the header, which posts to <code>/admin/logout</code>.</p>
   <p>Every page under the panel needs a session, except sign-in and sign-out. Without one, the request redirects to <code>/admin/login</code>.</p>
-  <p>The panel has no sign-up page, no password reset, no remember-me and no roles. To add a user, use the command-line tool in <a href="/docs/install">Installation</a>:</p>
+  <p>The panel has no sign-up page, no password reset, no remember-me and no roles. To add a user, use the command-line tool in <a href="/docs/install">Installation</a>. It checks the configuration and the email before it asks for the password:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
+
+  <h2>Your own pages</h2>
+  <p>A route of the app under the panel's address can require a sign-in. Take <code>ignite_panel::Session</code> as an argument, and it is a request guard: without a session the request redirects to the sign-in page. <code>user_id()</code> returns the signed-in user's id. This route renders the view in <a href="/docs/views">Views</a>:</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_panel::Session;
+use propel_rocket::PropelView;
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct Account {
+    pub user_id: i64,
+}
+
+/// An app page under the panel's mount. The `Session` guard redirects to the
+/// sign-in page when nobody is signed in.
+#[rocket::get("/admin/account")]
+pub fn account(session: Session) -&gt; PropelView {
+    PropelView::render(
+        "account",
+        &amp;Account {
+            user_id: session.user_id(),
+        },
+    )
+}</code></pre>
 
   <h2>Messages</h2>
   <p>After a change, the panel shows a message on the next page. See <a href="/docs/notifications">Notifications</a>.</p>

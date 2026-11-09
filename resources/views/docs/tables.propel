@@ -9,7 +9,7 @@
   <p>The list page of a resource is its table. It shows one row per record, with a column for each entry in the resource's <code>columns</code>, and a search box, sortable headings and a pager.</p>
 
   <h2>Columns</h2>
-  <p>Each column has a key, a label, and two flags: <code>sortable</code>, which makes its heading a sort link, and <code>searchable</code>, which makes the search box match it. The key must match a key of the record. A cell shows the text of the value: a boolean shows <code>Yes</code> or <code>No</code>, and an empty value shows nothing.</p>
+  <p>Each column has a key, a label, and two flags: <code>sortable</code>, which makes its heading a sort link, and <code>searchable</code>, which makes the search box match it. The key must match a key of the record. A cell shows the text of the value: a boolean shows <code>Yes</code> or <code>No</code>, and an empty value shows nothing. An ISO date such as <code>2026-03-01</code> shows as <code>1 Mar 2026</code>, and an ISO date-time shows as <code>8 Nov 2026, 19:32</code>. The form keeps the ISO value.</p>
 
   <h2>Search</h2>
   <p>The search box sends the text as <code>q</code>. The resource matches the text against each searchable column, with a <code>LIKE</code> pattern that has the text on both sides, and joins the matches with OR. A <code>%</code> or <code>_</code> the user types is matched literally. If no column is searchable, the search has no effect. Whether the match ignores case depends on the database's collation.</p>

@@ -19,7 +19,7 @@
   <p>Ignite, its docs and its example use the same versions of these crates:</p>
   <ul>
     <li>Rocket, from git, at revision <code>3a54d079</code>.</li>
-    <li>Propel, <code>propel_rocket</code>, from git, at revision <code>1853048</code>. Propel renders the panel's views.</li>
+    <li>Propel, <code>propel_rocket</code>, from git, at the full revision <code>18530480ee3328845b0abeaf35d0f8397f50634d</code>. A short revision makes Cargo build two copies. Propel renders the panel's views.</li>
     <li>Diesel 2.x, vendored with one fix. See below.</li>
   </ul>
 
@@ -29,11 +29,12 @@
 ignite-panel = { git = "https://github.com/lajennylove/Ignite", rev = "&lt;ignite commit sha&gt;" }
 ignite-core = { git = "https://github.com/lajennylove/Ignite", rev = "&lt;ignite commit sha&gt;" }
 rocket = { git = "https://github.com/rwf2/Rocket", rev = "3a54d079" }
-propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "1853048" }
+propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "18530480ee3328845b0abeaf35d0f8397f50634d" }
 diesel = { version = "2", features = ["mysql", "r2d2", "chrono"] }
 serde = { version = "1", features = ["derive"] }
-chrono = { version = "0.4", features = ["serde"] }</code></pre>
-  <p>The derive writes paths that start with <code>ignite_core</code>, so the app needs that crate too. A date field needs <code>chrono</code> with its <code>serde</code> feature.</p>
+chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"</code></pre>
+  <p>The derive writes paths that start with <code>ignite_core</code>, so the app needs that crate too. A date field needs <code>chrono</code> with its <code>serde</code> feature. The app's CLI binary uses <code>dotenvy</code> to read <code>.env</code>.</p>
 
   <h2>Copy the Diesel fix</h2>
   <p>Ignite depends on a patched Diesel, because libmariadb 3.4 returns an empty first row for some text queries without the fix. Cargo ignores patches in dependencies, so the app must patch Diesel itself. Copy the <code>vendor/diesel</code> folder from the Ignite repository into your app, then add:</p>
@@ -41,7 +42,7 @@ chrono = { version = "0.4", features = ["serde"] }</code></pre>
 diesel = { path = "vendor/diesel" }</code></pre>
 
   <h2>Database URL</h2>
-  <p>Ignite reads the connection URL from the <code>DATABASE_URL</code> environment variable, in the form <code>mysql://user:pass@host:port/db</code>. It builds the connection pool when the panel is created, and panics at startup if the variable is missing or the database cannot be reached.</p>
+  <p>Ignite reads the connection URL from the <code>DATABASE_URL</code> environment variable, in the form <code>mysql://user:pass@host:port/db</code>. It builds the connection pool when the panel is created, and panics at startup if the variable is missing or the database cannot be reached. In development, the variable can be set in a <code>.env</code> file.</p>
 
   <h2>Migrations</h2>
   <p>The panel owns a <code>users</code> table, which it creates with its own migration. Do not create a <code>users</code> table in your app. Run the panel's migrations at startup, with a connection from the pool:</p>
@@ -52,11 +53,14 @@ pub fn migrate(url: &amp;str) -&gt; Result&lt;(), Box&lt;dyn std::error::Error +
     let mut conn = pool.get()?;
     ignite_panel::run_migrations(&amp;mut conn)
 }</code></pre>
-  <p>The command-line tool below runs them too.</p>
+  <p>Do not rely on <code>diesel migration run</code> for the panel's tables. It cannot see the panel's migrations, which are embedded in the <code>ignite-panel</code> crate. Running the panel's migrations again does nothing.</p>
 
   <h2>Attach the panel</h2>
-  <p>Attach the panel to the Rocket build with the resources the app manages. The panel's routes mount when the app starts, under <code>/admin</code>:</p>
+  <p>Attach the panel to the Rocket build with the resources the app manages. The panel's routes mount when the app starts, under <code>/admin</code>. The app's own <code>account</code> route is guarded by the panel's session. See <a href="/docs/panel">Panel</a>:</p>
   <pre class="line-numbers"><code class="language-rust">mod article;
+mod author;
+mod reports;
+mod views_dir;
 mod migrate;
 mod mount;
 mod schema;
@@ -70,19 +74,23 @@ fn rocket() -&gt; rocket::Rocket&lt;rocket::Build&gt; {
         Ignite::new()
             .resource::&lt;article::Article&gt;()
             .resource::&lt;tag::Tag&gt;()
+            .resource::&lt;author::Author&gt;()
             .mount("/admin")
             .fairing(),
     )
+    .mount("/", rocket::routes![reports::account])
 }</code></pre>
 
   <h2>Create the first user</h2>
-  <p>Each app has a three-line binary at <code>src/bin/ignite.rs</code>:</p>
+  <p>Each app has a small binary at <code>src/bin/ignite.rs</code>. It loads <code>.env</code> first, as the workspace binary does:</p>
   <pre class="line-numbers"><code class="language-rust">fn main() {
+    // The app reads DATABASE_URL from .env, so the CLI does too.
+    let _ = dotenvy::dotenv();
     ignite_panel::cli::main();
 }</code></pre>
   <p>Then create a user from the app:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
-  <p>The command reads <code>DATABASE_URL</code>, runs the panel's migrations, and asks for the password twice without showing it. It needs at least 8 characters.</p>
+  <p>The command reads <code>DATABASE_URL</code>, connects, runs the panel's migrations and checks that the email is free. Only then does it ask for the password, twice, without showing it. A configuration error stops the command before the prompt. The password needs at least 8 characters.</p>
 
   <h2>Run it</h2>
   <pre class="line-numbers"><code class="language-bash">npm install
@@ -90,6 +98,9 @@ npm run build   # once: writes public/build, which Rocket serves
 npm run dev     # Vite, in one terminal
 cargo run       # the Rocket app, in another</code></pre>
   <p>Rocket will not start until <code>public/build</code> exists, so run <code>npm run build</code> once first. Views are read from <code>resources/views/</code> at runtime, so an edit to a view shows on the next reload.</p>
+
+  <h2>Deploy</h2>
+  <p>The panel's own views are read from disk. A deployed app ships the <code>views/ignite</code> folder of the Ignite source and sets <code>IGNITE_VIEWS_DIR</code> to it. See <a href="/docs/views">Views</a>.</p>
 
   <h2>Secret key</h2>
   <p>Set <code>IGNITE_SECRET_KEY</code> before you start the app. It signs the sign-in and flash cookies. See <a href="/docs/panel">Panel</a> for how to create one, and for what happens without it.</p>

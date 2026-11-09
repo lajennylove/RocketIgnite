@@ -11,6 +11,8 @@
   <h2>Page actions</h2>
   <p>The list page has a <code>New</code> button, which opens an empty form. The form has a <code>Create</code> button on a new record, and <code>Save</code> on an existing one, plus a <code>Cancel</code> link back to the list.</p>
 
+  <p>The headings use the record's singular name, such as <code>New Tag</code> on the new page and <code>Edit Tag #3</code> on the edit page.</p>
+
   <h2>Row actions</h2>
   <ul>
     <li><strong>Edit</strong> opens the record's edit page at <code>/admin/&lt;slug&gt;/&lt;id&gt;/edit</code>.</li>
