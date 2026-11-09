@@ -1,7 +1,11 @@
 @extends('layouts.app')
 
-@section('title')
-  Introduction
+@section('title')Introduction@endsection
+@section('description')Ignite is an admin panel for Rocket.rs, built on Propel views and Diesel, for MariaDB or MySQL tables. Filters and bulk actions are not built yet.@endsection
+
+@section('og_type')website@endsection
+@section('structured_data')
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Ignite","url":"https://ignite.rocketboost.rs/","description":"Ignite is an admin panel for Rocket.rs, built on Propel views and Diesel, for MariaDB or MySQL tables. Filters and bulk actions are not built yet.","codeRepository":"https://github.com/lajennylove/Ignite","sameAs":"https://github.com/lajennylove/Ignite"}</script>
 @endsection
 
 @section('content')

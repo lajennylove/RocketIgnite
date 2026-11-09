@@ -1,8 +1,11 @@
 @extends('layouts.app')
 
-@section('title')
-  Not found
-@endsection
+@section('title')Not found@endsection
+
+@section('description')There is no Ignite docs page at this address. Start again from the introduction to Ignite, the admin panel for Rocket.rs, built on Propel and Diesel.@endsection
+@section('robots')noindex,follow@endsection
+@section('og_type')website@endsection
+@section('structured_data')@endsection
 
 @section('content')
   <h1>Not found</h1>

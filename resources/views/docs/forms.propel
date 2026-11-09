@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Forms
-@endsection
+@section('title')Forms@endsection
+@section('description')New and edit pages draw a form from the fields of a resource, with text, number, date and checkbox inputs. Help text and file fields are not built yet.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

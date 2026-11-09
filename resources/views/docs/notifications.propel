@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Notifications
-@endsection
+@section('title')Notifications@endsection
+@section('description')The panel messages after a create, update or delete, and its errors on forms and sign-in. Your own flash messages and toasts are not built yet.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Tables
-@endsection
+@section('title')Tables@endsection
+@section('description')The list page of a resource shows one row per record, with a search box, sortable headings and a pager. Filters and bulk actions are not built yet.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

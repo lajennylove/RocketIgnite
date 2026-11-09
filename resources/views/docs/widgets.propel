@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Widgets
-@endsection
+@section('title')Widgets@endsection
+@section('description')The dashboard shows stat cards and tables of the latest records per resource. Charts are not built yet, and the cards and tables do not link anywhere.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

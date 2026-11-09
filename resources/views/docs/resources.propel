@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Resources
-@endsection
+@section('title')Resources@endsection
+@section('description')A resource connects a MariaDB or MySQL table to the panel. You write it by hand, or #[derive(IgniteResource)] writes it from a Diesel model.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

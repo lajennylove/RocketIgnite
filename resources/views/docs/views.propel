@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Views
-@endsection
+@section('title')Views@endsection
+@section('description')The panel screens are Propel views in the ignite namespace. An app can add its own views, extend the panel layout, or point the panel at a views folder.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Panel
-@endsection
+@section('title')Panel@endsection
+@section('description')The panel is the admin area of an Ignite app: its /admin address, its configuration, sign-in with server-side sessions, login throttling and form tokens.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

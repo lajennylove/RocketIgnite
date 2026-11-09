@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Actions
-@endsection
+@section('title')Actions@endsection
+@section('description')Actions are the buttons that change records: New, Create, Save, Edit and Delete on each row. Bulk actions and custom actions are not built yet.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

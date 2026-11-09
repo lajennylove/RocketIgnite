@@ -8,8 +8,12 @@ use nav::DocPage;
 
 use propel_rocket::PropelView;
 use rocket::fs::FileServer;
-use rocket::http::Status;
+use rocket::http::{ContentType, Status};
 use rocket::response::Redirect;
+
+/// The site's absolute address. Canonical links, the sitemap and the social
+/// card are built from it.
+pub const SITE_URL: &str = "https://ignite.rocketboost.rs";
 
 #[get("/")]
 fn home() -> Redirect {
@@ -43,10 +47,38 @@ fn not_found() -> (Status, PropelView) {
     not_found_page()
 }
 
+/// The crawler rules. Everything is allowed, and the sitemap is named.
+#[get("/robots.txt")]
+fn robots() -> (ContentType, String) {
+    (
+        ContentType::Plain,
+        format!("User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}/sitemap.xml\n"),
+    )
+}
+
+/// Every documentation page in the sidebar, in order.
+#[get("/sitemap.xml")]
+fn sitemap() -> (ContentType, String) {
+    let urls: String = nav::paths()
+        .iter()
+        .map(|path| {
+            format!(
+                "  <url>\n    <loc>{SITE_URL}{path}</loc>\n    <lastmod>2026-11-09</lastmod>\n  </url>\n"
+            )
+        })
+        .collect();
+    (
+        ContentType::new("application", "xml"),
+        format!(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n{urls}</urlset>\n"
+        ),
+    )
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![home, docs])
+        .mount("/", routes![home, docs, robots, sitemap])
         // Built assets: hashed files and copied images and fonts.
         .mount("/build", FileServer::new("public/build"))
         .register("/", catchers![not_found])

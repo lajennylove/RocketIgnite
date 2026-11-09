@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title')
-  Installation
-@endsection
+@section('title')Installation@endsection
+@section('description')How to add Ignite to a Rocket app: the pinned Rocket, Propel and Diesel versions, DATABASE_URL, the panel migrations, the first user and running the app.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>

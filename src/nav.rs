@@ -4,6 +4,12 @@
 
 use serde::Serialize;
 
+use crate::SITE_URL;
+
+/// The social card. The build copies `resources/images` to `public/build`
+/// under its own path, so the file is at this address.
+const OG_IMAGE: &str = "/build/resources/images/og-image.png";
+
 /// A link is true when it exists, so `@if ($pager.prev)` reads an `Option<Link>`.
 #[derive(Debug, Clone, Serialize, propel_macros::Truthy)]
 pub struct Link {
@@ -62,6 +68,15 @@ fn groups() -> Vec<Group> {
     ]
 }
 
+/// The address of every page in the sidebar, in order. The sitemap lists them.
+pub fn paths() -> Vec<String> {
+    groups()
+        .into_iter()
+        .flat_map(|group| group.links)
+        .map(|link| link.href)
+        .collect()
+}
+
 /// The sidebar title of the page at `path`, if the page is in the sidebar.
 pub fn title(path: &str) -> Option<String> {
     groups()
@@ -79,6 +94,10 @@ pub struct DocPage {
     pub title: String,
     pub nav: Vec<Group>,
     pub pager: Pager,
+    /// The page's absolute address, for the canonical and Open Graph URLs.
+    pub canonical: String,
+    /// The absolute address of the social card.
+    pub og_image: String,
 }
 
 impl DocPage {
@@ -96,10 +115,19 @@ impl DocPage {
             next: index.and_then(|i| links.get(i + 1).cloned()),
         };
 
+        // The error page has no address of its own, so its canonical is the home.
+        let canonical = if path.is_empty() {
+            format!("{SITE_URL}/")
+        } else {
+            format!("{SITE_URL}{path}")
+        };
+
         DocPage {
             title: title.into(),
             nav,
             pager,
+            canonical,
+            og_image: format!("{SITE_URL}{OG_IMAGE}"),
         }
     }
 }
