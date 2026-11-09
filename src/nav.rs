@@ -23,8 +23,8 @@ pub struct Pager {
 }
 
 /// Every page in the sidebar, in order. Previous and next follow this order.
-/// The groups are the sections of the site: introduction, installation,
-/// Vite and Tailwind, Blade syntax, assets, and examples.
+/// The groups are the sections of the site: getting started, the admin panel,
+/// the building blocks of a resource, and views.
 fn groups() -> Vec<Group> {
     let group = |heading: &str, links: &[(&str, &str)]| Group {
         heading: heading.into(),
@@ -38,41 +38,26 @@ fn groups() -> Vec<Group> {
     };
 
     vec![
-        group("Introduction", &[("/", "Introduction")]),
         group(
-            "Installation",
-            &[("/docs/install", "Installation and configuration")],
-        ),
-        group(
-            "Vite and Tailwind",
+            "Getting started",
             &[
-                ("/docs/vite-tailwind", "Setup and hot reload"),
-                ("/features/cache", "Template cache"),
+                ("/docs/introduction", "Introduction"),
+                ("/docs/install", "Installation"),
             ],
         ),
+        group("Admin panel", &[("/docs/panel", "Panel")]),
         group(
-            "Blade syntax",
+            "Resources",
             &[
-                ("/docs/syntax", "Syntax overview"),
-                ("/docs/layouts", "Layouts and sections"),
-                ("/docs/context", "Context and composers"),
-                ("/docs/components", "Components and reuse"),
-                ("/features/escaping", "Escaping"),
-                ("/features/control", "Control flow"),
-                ("/features/dump", "@dump"),
-                ("/features/dd", "@dd"),
+                ("/docs/resources", "Resources"),
+                ("/docs/forms", "Forms"),
+                ("/docs/tables", "Tables"),
+                ("/docs/actions", "Actions"),
+                ("/docs/notifications", "Notifications"),
+                ("/docs/widgets", "Widgets"),
             ],
         ),
-        group("Assets", &[("/docs/assets", "Images, fonts and assets")]),
-        group(
-            "Examples",
-            &[
-                ("/posts", "All posts"),
-                ("/posts/1", "One post"),
-                ("/errors/missing", "Missing variable"),
-                ("/errors/nested-section", "Nested section"),
-            ],
-        ),
+        group("Customizing", &[("/docs/views", "Views")]),
     ]
 }
 

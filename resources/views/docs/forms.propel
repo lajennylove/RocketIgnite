@@ -1,0 +1,11 @@
+@extends('layouts.app')
+
+@section('title')
+  Forms
+@endsection
+
+@section('content')
+  <h1>{{ $title }}</h1>
+  <p>A form is how a resource takes input for create and edit. This page covers the field kinds, validation and required fields.</p>
+  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+@endsection

@@ -1,0 +1,11 @@
+@extends('layouts.app')
+
+@section('title')
+  Resources
+@endsection
+
+@section('content')
+  <h1>{{ $title }}</h1>
+  <p>A resource connects a database table to the panel. This page covers the resource trait, the <code>SLUG</code> and <code>TITLE</code> constants, the fields and columns, and the <code>Record</code> and <code>Input</code> types.</p>
+  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+@endsection

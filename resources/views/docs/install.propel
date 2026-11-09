@@ -1,55 +1,50 @@
 @extends('layouts.app')
 
 @section('title')
-  Installation and configuration
+  Installation
 @endsection
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>Propel is a Rust crate that works with Rocket. It needs a Rust toolchain and, for assets, Node.js.</p>
+  <p>Ignite is a Rust crate that adds an admin panel to a Rocket app. The app needs a Rust toolchain, a MariaDB or MySQL database, and, for the panel's assets, Node.js.</p>
 
   <h2>Requirements</h2>
   <ul>
     <li>Rust, stable, with Cargo.</li>
+    <li>MariaDB or MySQL. Ignite supports no other database.</li>
     <li>Node.js 22.12 or newer, or 20.19 or newer, for Vite and Tailwind.</li>
   </ul>
 
-  <h2>Add Propel to your project</h2>
-  <p>Add Propel and Rocket to <code>Cargo.toml</code>. Use the same Rocket revision as Propel, so the project has one copy of Rocket:</p>
+  <h2>Pinned versions</h2>
+  <p>Ignite, its docs and its example use the same versions of these crates:</p>
+  <ul>
+    <li>Rocket, from git, at revision <code>3a54d079</code>.</li>
+    <li>Propel, <code>propel_rocket</code>, from git, at revision <code>1853048</code>. Propel renders the panel's views.</li>
+    <li>Diesel 2.x, with the <code>mysql</code>, <code>r2d2</code>, <code>chrono</code> and <code>diesel_migrations</code> features.</li>
+  </ul>
+  <p>Use the same Rocket revision as Propel, so the app has one copy of Rocket:</p>
   <pre class="line-numbers"><code class="language-toml">[dependencies]
 rocket = { git = "https://github.com/rwf2/Rocket", rev = "3a54d079" }
-propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "600a609ae8046604160bbf9837a6258c0c30d04e" }</code></pre>
-  <p>Propel is not on crates.io yet, so it comes from git. Pin <code>rev</code> to a commit you have tested.</p>
+propel_rocket = { git = "https://github.com/lajennylove/propel", rev = "18530480ee3328845b0abeaf35d0f8397f50634d" }
+diesel = { version = "2", features = ["mysql", "r2d2", "chrono", "diesel_migrations"] }</code></pre>
+  <p>The Ignite crates are not built yet, so this page does not give their dependency line.</p>
 
-  <h2>Render a view</h2>
-  <p>A route builds the context for its view and returns the rendered page:</p>
-  <pre class="line-numbers"><code class="language-rust">#[get("/posts")]
-fn posts() -> PropelView {
-    PropelView::render("posts.index", &amp;PostsIndex { posts: all_posts() })
-}</code></pre>
-  <p>The view name <code>posts.index</code> is the file <code>views/posts/index.propel</code>. Dots are folder separators.</p>
+  <h2>Database URL</h2>
+  <p><strong>Not built yet.</strong> Ignite will read the connection URL from the <code>DATABASE_URL</code> environment variable, in the form <code>mysql://user:pass@host:port/db</code>. It will open the connection pool when the app launches.</p>
 
-  <h2>Project layout</h2>
-  <pre class="line-numbers"><code class="language-text">your-app/
-├── Cargo.toml
-├── src/              routes and view contexts
-├── views/            .propel templates
-│   ├── layouts/app.propel
-│   └── posts/index.propel
-├── resources/        CSS, JavaScript, images and fonts for Vite
-├── public/           built files (generated, not committed)
-├── package.json
-└── vite.config.js</code></pre>
-  <p>Views are read from <code>views/</code>, and built files from <code>public/</code>, both relative to the folder you run the app from. There is no configuration file yet.</p>
+  <h2>Migrations</h2>
+  <p><strong>Not built yet.</strong> Ignite will ship a migration that creates the <code>users</code> table, the table the login uses. The app will run it with <code>diesel migration run</code>, or from its own code.</p>
+
+  <h2>Attach the panel</h2>
+  <p><strong>Not built yet.</strong> The panel will attach to the Rocket build in one call, which also mounts its routes, by default under <code>/admin</code>.</p>
+
+  <h2>Create the first user</h2>
+  <p><strong>Not built yet.</strong> A command-line tool will create the first user. It will ask for the password without showing it on screen.</p>
 
   <h2>Run it</h2>
   <pre class="line-numbers"><code class="language-bash">npm install
+npm run build   # once: writes public/build, which Rocket serves
 npm run dev     # Vite, in one terminal
 cargo run       # the Rocket app, in another</code></pre>
-
-  <h2>Release builds</h2>
-  <p><code>cargo build --release</code> is refused on purpose. Production needs the compiled views, which are not built yet. The <a href="https://github.com/lajennylove/propel/blob/main/docs/production.md">production guide</a> lists the steps.</p>
-
-  <h2>A note on the example app</h2>
-  <p>This site is the example app in <code>examples/propel</code> of the Rocket repository. The navigation and the page wrapper that adds it to each view are part of the app for now. Propel will provide them later.</p>
+  <p>Rocket will not start until <code>public/build</code> exists, so run <code>npm run build</code> once first. Views are read from <code>resources/views/</code> at runtime, so an edit to a view shows on the next reload.</p>
 @endsection

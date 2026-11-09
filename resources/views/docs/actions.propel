@@ -1,0 +1,11 @@
+@extends('layouts.app')
+
+@section('title')
+  Actions
+@endsection
+
+@section('content')
+  <h1>{{ $title }}</h1>
+  <p>Actions are the buttons on a row or a page. This page covers the row actions: edit, and delete with a confirmation step.</p>
+  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+@endsection

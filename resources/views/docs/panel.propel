@@ -1,0 +1,11 @@
+@extends('layouts.app')
+
+@section('title')
+  Panel
+@endsection
+
+@section('content')
+  <h1>{{ $title }}</h1>
+  <p>The panel is the admin area of the app. This page covers its path, its configuration, the login and the session, and the flash messages that confirm each change.</p>
+  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+@endsection

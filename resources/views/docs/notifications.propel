@@ -1,0 +1,11 @@
+@extends('layouts.app')
+
+@section('title')
+  Notifications
+@endsection
+
+@section('content')
+  <h1>{{ $title }}</h1>
+  <p>Notifications are the flash messages the panel shows after a change. This page covers how they are carried to the next page.</p>
+  <p><strong>Not built yet.</strong> This feature is not in the library yet, so this page describes no working behavior. It will be written when the feature lands.</p>
+@endsection

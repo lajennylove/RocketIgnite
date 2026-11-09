@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title') · Propel</title>
+    <title>@yield('title') · Ignite</title>
     <link rel="icon" href="{{ asset('resources/images/logo-mark.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
   </head>
@@ -16,9 +16,9 @@
       </label>
       <a href="/" class="flex items-center gap-2 font-bold text-heading no-underline hover:no-underline">
         <img src="{{ asset('resources/images/logo-mark.png') }}" alt="" class="size-8 rounded-md">
-        Propel
+        Ignite
       </a>
-      <span class="truncate text-[15px] text-text">Templating Engine</span>
+      <span class="truncate text-[15px] text-text">Admin panel for Rocket.rs</span>
     </header>
 
     <div class="mx-auto flex max-w-[1280px] flex-col md:flex-row">
@@ -59,6 +59,6 @@
         </nav>
       </main>
     </div>
-    <script data-goatcounter="https://propel.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    <script data-goatcounter="https://ignite.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   </body>
 </html>

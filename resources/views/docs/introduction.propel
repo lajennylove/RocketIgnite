@@ -1,0 +1,34 @@
+@extends('layouts.app')
+
+@section('title')
+  Introduction
+@endsection
+
+@section('content')
+  <h1>Ignite</h1>
+  <p>Ignite is an admin panel for <a href="https://rocket.rs">Rocket</a>, the Rust web framework. Give it a MariaDB or MySQL table and it builds a back office for that table: a login page, a dashboard, and screens to list, search, sort, create, edit and delete its rows.</p>
+  <p><strong>Status.</strong> Ignite is still being built. Each page on this site says whether its feature is built. A page marked "Not built yet" describes a plan, not working code.</p>
+
+  <h2>What Ignite is</h2>
+  <ul>
+    <li><strong>A panel inside your app.</strong> It mounts in a Rocket app, under <code>/admin</code> by default.</li>
+    <li><strong>Modelled on Filament 5.x.</strong> It has a panel, resources, forms, tables, actions, notifications, widgets and a login. The pages here follow the Filament docs' order, so that reference is useful for the ideas.</li>
+    <li><strong>Written in Rust.</strong> A resource is a Rust type that implements a trait. The trait names the table's fields and columns, and how to list, create, update and delete its rows. Ignite draws the screens from that.</li>
+  </ul>
+
+  <h2>What Ignite is not</h2>
+  <p>Version 1 leaves these out:</p>
+  <ul>
+    <li>Infolists, a read-only view of one record.</li>
+    <li>Several panels, themes and translations.</li>
+    <li>Relations between tables, file uploads, filters and bulk actions.</li>
+    <li>Charts. The widgets are stat cards and a table of the latest records.</li>
+  </ul>
+  <p>Ignite also supports MariaDB and MySQL only.</p>
+
+  <h2>How it relates to Propel</h2>
+  <p><a href="https://github.com/lajennylove/propel">Propel</a> renders Ignite's screens. The panel's views live in the <code>ignite</code> namespace, so an app can extend them with <code>@@extends('ignite::layouts.app')</code>. Ignite inherits Propel's current limits, such as runtime-only views. The <a href="https://github.com/lajennylove/propel">Propel repository</a> lists them.</p>
+
+  <h2>How it relates to Diesel</h2>
+  <p>Ignite queries the database with Diesel 2.x and the MySQL backend. When the app starts, the panel opens a pool of connections. Each request borrows a connection from the pool. Your resource writes its queries with Diesel, so a table's rows are plain Diesel queries.</p>
+@endsection

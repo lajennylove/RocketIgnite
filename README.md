@@ -2,17 +2,18 @@
 
 The documentation site for [Ignite](https://github.com/lajennylove/Ignite), an admin panel for Rocket.rs. Built on Rocket and [Propel](https://github.com/lajennylove/propel) views, with Tailwind and Vite for the assets.
 
-Status: scaffold. The site was copied from the Propel docs app, so its pages are still Propel's. They need rewriting for Ignite.
+Status: in progress. The Introduction and Installation pages are written. The other pages say "Not built yet" until their features land in the library.
 
 ## Dependencies
 
 - Rocket: git revision `3a54d079`
-- Propel: git revision `ff32a6b` (`propel_rocket`)
+- Propel: git revision `1853048` (`propel_rocket`)
 
 ## Run
 
 ```sh
 npm install
+npm run build  # once: Rocket will not start until public/build exists
 npm run dev    # Vite, in one terminal
 cargo run      # Rocket, in another
 ```
