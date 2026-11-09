@@ -49,24 +49,26 @@ pub fn panel() -&gt; Ignite {
   <p>Each failed sign-in counts against its email, five per 60 seconds, and against its IP address, twenty per 60 seconds. The counts are kept in the <code>login_throttles</code> table, so they hold across restarts and processes. While either count is at its limit, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. A successful sign-in clears the email's count. Requests whose address is unknown share one IP count.</p>
 
   <h2>Your own pages</h2>
-  <p>A route of the app under the panel's address can require a sign-in. Take <code>ignite_panel::AdminUser</code> as an argument, and it is a request guard: without a session the request redirects to the sign-in page. <code>user_id()</code> returns the signed-in user's id. This route renders the view in <a href="/docs/views">Views</a>:</p>
-  <pre class="line-numbers"><code class="language-rust">use ignite_panel::AdminUser;
+  <p>A route of the app under the panel's address can require a sign-in. Take <code>ignite_panel::AdminUser</code> as an argument, and it is a request guard: without a session the request redirects to the sign-in page. <code>user_id()</code> returns the signed-in user's id. This route also takes <code>ignite_panel::PanelStyles</code>, so its view gets the panel's stylesheet. It renders the view in <a href="/docs/views">Views</a>:</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_panel::{AdminUser, PanelStyles};
 use propel_rocket::PropelView;
 use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct Account {
     pub user_id: i64,
+    pub ignite_styles: String,
 }
 
 /// An app page under the panel's mount. The `AdminUser` guard redirects to the
 /// sign-in page when nobody is signed in.
 #[rocket::get("/admin/account")]
-pub fn account(session: AdminUser) -&gt; PropelView {
+pub fn account(session: AdminUser, styles: PanelStyles) -&gt; PropelView {
     PropelView::render(
         "account",
         &amp;Account {
             user_id: session.user_id(),
+            ignite_styles: styles.html().to_string(),
         },
     )
 }</code></pre>

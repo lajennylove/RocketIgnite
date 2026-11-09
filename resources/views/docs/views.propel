@@ -20,12 +20,14 @@
   </ul>
 
   <h2>Extend the layout</h2>
-  <p>A view of the app extends the panel's layout and fills its <code>title</code> and <code>content</code> sections. It needs only its own variables. This view shows the signed-in user, and the route in <a href="/docs/panel">Panel</a> renders it with <code>user_id</code>:</p>
+  <p>A view of the app extends the panel's layout and fills its <code>title</code> and <code>content</code> sections. It needs its own variables, and the panel's styles. The route in <a href="/docs/panel">Panel</a> gets the styles from the <code>PanelStyles</code> request guard, and passes them in as <code>ignite_styles</code>. This view shows the signed-in user:</p>
   <pre class="line-numbers"><code class="language-blade">@@extends('ignite::layouts.app')
 
 @@section('title')
   Account
 @@endsection
+
+@@section('ignite_styles')@{!! $ignite_styles !!}@@endsection
 
 @@section('content')
   &lt;h1&gt;Account&lt;/h1&gt;
@@ -34,6 +36,7 @@
   <p>The view is <code>resources/views/account.propel</code>, and the view name is <code>account</code>.</p>
   <p>The layout also yields three sections for the panel's own chrome. The panel's pages set them, and an app view can set them too:</p>
   <ul>
+    <li><code>ignite_styles</code>, the panel's stylesheet. The view fills it with <code>@{!! $ignite_styles !!}</code>. Without it the view still renders, but unstyled. Propel's <code>@@vite</code> cannot load the panel's styles, because it resolves against the app's own build.</li>
     <li><code>ignite_home</code>, the brand link in the header. It defaults to <code>/admin</code>.</li>
     <li><code>ignite_nav</code>, the navigation and the sign-out button. It is empty by default, so an app view has no navigation unless it sets this section.</li>
     <li><code>ignite_flash</code>, the message shown after a change. It is empty by default.</li>
