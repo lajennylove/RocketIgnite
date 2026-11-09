@@ -23,7 +23,10 @@
   <p>A value that clashes with a unique index, such as a second user with the same email, shows <code>Email is already taken.</code> under its field. See <a href="/docs/forms">Forms</a>.</p>
 
   <h2>Sign-in errors</h2>
-  <p>A wrong email or password shows <code>The email or password is incorrect.</code> on the sign-in page. See <a href="/docs/panel">Panel</a>.</p>
+  <p>A wrong email or password shows <code>The email or password is incorrect.</code> on the sign-in page. Too many attempts show <code>Too many sign-in attempts. Try again in N seconds.</code> with status 429. See <a href="/docs/panel">Panel</a>.</p>
+
+  <h2>Expired forms</h2>
+  <p>A form whose security token is missing or wrong shows the Page Expired page, with status 419. Reload the page and try again.</p>
 
   <h2>Server errors</h2>
   <p>A row that does not exist gets a 404 page. A database error gets a 500 page, and the error is logged, not shown to the user.</p>

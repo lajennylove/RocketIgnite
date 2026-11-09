@@ -87,6 +87,8 @@ fn rocket() -&gt; rocket::Rocket&lt;rocket::Build&gt; {
   <p>Then create a user from the app:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
   <p>The command reads <code>DATABASE_URL</code>, connects, runs the panel's migrations and checks that the email is free. Only then does it ask for the password, twice, without showing it. A configuration error stops the command before the prompt. The password needs at least 8 characters.</p>
+  <p>A script can give the password instead. When standard input is not a terminal, or with <code>--password-stdin</code>, the password is the first line of standard input. The password has no environment variable.</p>
+  <pre class="line-numbers"><code class="language-bash">printf '%s' "$PW" | cargo run --bin ignite -- user create --email you@example.com --password-stdin</code></pre>
 
   <h2>Run it</h2>
   <pre class="line-numbers"><code class="language-bash">npm install

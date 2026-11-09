@@ -19,7 +19,7 @@ pub fn panel() -&gt; Ignite {
   <p>The panel's routes are:</p>
   <ul>
     <li><code>GET /admin</code>, the dashboard.</li>
-    <li><code>GET /admin/login</code>, <code>POST /admin/login</code> and <code>POST /admin/logout</code>, for sign-in and sign-out.</li>
+    <li><code>GET /admin/login</code>, <code>POST /admin/login</code>, <code>POST /admin/logout</code> and <code>POST /admin/logout-everywhere</code>, for sign-in, sign-out and ending every session of the user.</li>
     <li><code>GET /admin/&lt;slug&gt;</code>, the list of a resource, with <code>q</code>, <code>sort</code>, <code>dir</code> and <code>page</code> in the query string.</li>
     <li><code>GET /admin/&lt;slug&gt;/new</code> and <code>POST /admin/&lt;slug&gt;</code>, to create a row.</li>
     <li><code>GET /admin/&lt;slug&gt;/&lt;id&gt;/edit</code> and <code>POST /admin/&lt;slug&gt;/&lt;id&gt;</code>, to update a row.</li>
@@ -36,10 +36,17 @@ pub fn panel() -&gt; Ignite {
 
   <h2>Sign-in</h2>
   <p>The panel's users live in the <code>users</code> table, which the panel owns: an id, a name, an email address that must be unique, a password hash and a creation time. Passwords are hashed with argon2.</p>
-  <p>Sign in at <code>/admin/login</code>. A wrong email or password shows the same message for both, so the page does not reveal which emails are registered. Signing in sets a signed session cookie. Sign out with the button in the header, which posts to <code>/admin/logout</code>.</p>
+  <p>Sign in at <code>/admin/login</code>. A wrong email or password shows the same message for both, so the page does not reveal which emails are registered.</p>
+  <p>A sign-in is a row in the <code>sessions</code> table, and it lasts eight hours. The browser holds only a signed cookie with the row's id, and the panel checks the row on each request. Sign-out deletes the row. The header's <code>Sign out everywhere</code> button, which posts to <code>/admin/logout-everywhere</code>, deletes every session of the signed-in user.</p>
   <p>Every page under the panel needs a session, except sign-in and sign-out. Without one, the request redirects to <code>/admin/login</code>.</p>
   <p>The panel has no sign-up page, no password reset, no remember-me and no roles. To add a user, use the command-line tool in <a href="/docs/install">Installation</a>. It checks the configuration and the email before it asks for the password:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
+
+  <h2>Forgery protection</h2>
+  <p>Each browser has a token, held in the signed <code>ignite_csrf</code> cookie and created on the first panel page it renders. Every panel form carries it as a hidden <code>_token</code> field. Sign-in, sign-out, log out everywhere, create, update and delete check the token before they do anything. A missing or wrong token gets status 419 and a Page Expired page. Your app's own POST routes are not covered, and need their own check.</p>
+
+  <h2>Login throttle</h2>
+  <p>Each failed sign-in counts against its email, five per 60 seconds, and against its IP address, twenty per 60 seconds. The counts are kept in the <code>login_throttles</code> table, so they hold across restarts and processes. While either count is at its limit, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. A successful sign-in clears the email's count. Requests whose address is unknown share one IP count.</p>
 
   <h2>Your own pages</h2>
   <p>A route of the app under the panel's address can require a sign-in. Take <code>ignite_panel::AdminUser</code> as an argument, and it is a request guard: without a session the request redirects to the sign-in page. <code>user_id()</code> returns the signed-in user's id. This route renders the view in <a href="/docs/views">Views</a>:</p>
@@ -67,8 +74,4 @@ pub fn account(session: AdminUser) -&gt; PropelView {
   <h2>Messages</h2>
   <p>After a change, the panel shows a message on the next page. See <a href="/docs/notifications">Notifications</a>.</p>
 
-  <h2>Not built yet</h2>
-  <ul>
-    <li><strong>CSRF protection.</strong> The forms carry no token yet, so another site could submit a form to the panel while you are signed in.</li>
-  </ul>
 @endsection

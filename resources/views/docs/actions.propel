@@ -21,12 +21,12 @@
 
   <h2>Deleting a record</h2>
   <p>The Delete button asks the browser to confirm with the message <code>Delete this record? This cannot be undone.</code> Cancelling the dialog keeps the record. The confirmation is written in JavaScript: with JavaScript turned off, the delete goes through without asking.</p>
+  <p>The delete form carries the panel's token. A missing or wrong token shows the Page Expired page, and nothing is deleted.</p>
   <p>A delete for an id that matches no row returns 404. On success, the panel returns to the list and shows <code>Record deleted.</code>. See <a href="/docs/notifications">Notifications</a>.</p>
 
   <h2>Not built yet</h2>
   <ul>
     <li><strong>Bulk actions.</strong> There is no way to act on several rows at once.</li>
     <li><strong>Custom actions.</strong> A resource cannot add its own buttons in v1.</li>
-    <li><strong>CSRF protection.</strong> The delete form carries no token yet. See <a href="/docs/panel">Panel</a>.</li>
   </ul>
 @endsection
