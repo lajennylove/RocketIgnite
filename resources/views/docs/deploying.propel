@@ -1,0 +1,30 @@
+@extends('layouts.app')
+
+@section('title')Deploying@endsection
+@section('description')How to deploy an Ignite app: the migrate step, the release build and its secret key, trusted proxies, backups, and the health check the panel does not have yet.@endsection
+
+@section('content')
+  <h1>{{ $title }}</h1>
+  <p>A deploy runs the migrations, builds the app in release mode, sets its environment and keeps backups. Ignite does not migrate when the app starts, so the migrate step is part of every deploy.</p>
+
+  <h2>Migrations</h2>
+  <p>Run the panel's migrations before the first start, and on every deploy after that. In an app, the command is:</p>
+  <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- migrate</code></pre>
+  <p>Running it again does nothing when the migrations are already applied. See <a href="/docs/install">Installation</a> for the <code>ignite</code> binary.</p>
+
+  <h2>Release build</h2>
+  <p>Build with <code>cargo build --release</code>. A release build renders compiled views, so the deployed app needs no view files.</p>
+  <p>A release build needs <code>IGNITE_SECRET_KEY</code>, a base64 string of 32 bytes, and stops at startup without a valid one. Create the key with <code>openssl rand -base64 32</code>, and set it in the server's environment, not in git.</p>
+  <p>Cookies are marked Secure only in release builds. A release build therefore needs HTTPS for sign-in to work in a browser. Local testing over plain HTTP needs a debug build.</p>
+
+  <h2>Trusted proxies</h2>
+  <p>If the app runs behind a reverse proxy, set <code>IGNITE_TRUSTED_PROXIES</code> to the proxy's address. It takes comma-separated IP addresses or CIDR ranges. Without it, the login throttle counts the proxy's address, so every sign-in shares one IP count. Forwarded headers are read only from a trusted proxy, so list only the proxies you run. See <a href="/docs/panel#login-throttle">Panel</a> for how the throttle counts.</p>
+
+  <h2>Backups</h2>
+  <p>Back up the database with <code>mysqldump --single-transaction</code>. The option takes a consistent snapshot of InnoDB tables without locking them. Include the panel's tables and the app's own tables:</p>
+  <pre class="line-numbers"><code class="language-bash">mysqldump --single-transaction your_database users sessions login_throttles user_avatars your_app_table</code></pre>
+  <p>A backup holds password hashes and session rows, so store it as you would store the database itself. A restored database brings back its sessions. A sign-in that was ended after the backup was taken is valid again until that session expires.</p>
+
+  <h2>Health check</h2>
+  <p>The panel has no health route yet, so a health check cannot use it.</p>
+@endsection

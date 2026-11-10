@@ -29,7 +29,7 @@
   <p>The picture is served from <code>/admin/profile/avatar</code>, and it is stored in the <code>user_avatars</code> table, so the <code>users</code> row the panel reads on every request stays small.</p>
 
   <h2>Password</h2>
-  <p>A password change needs the current password. The new password must be at least eight characters, the same minimum as the command-line tool, and typed twice. Once it changes, every other session of the user ends, on every other device, so an old sign-in cannot keep working. The session of the current browser stays signed in.</p>
+  <p>A password change needs the current password. The new password must be at least eight characters, the same minimum as the command-line tool, and typed twice. Once it changes, every other session of the user ends, on every other device, so an old sign-in cannot keep working. The session of the current browser stays signed in. The change counts against the same login throttle as sign-in. See <a href="/docs/panel#login-throttle">Panel</a>.</p>
 
   <h2>Theme</h2>
   <p>The round button beside <strong>Sign out</strong> in the top bar switches the panel between the light and the dark theme. Every user starts on the light theme. The choice is saved on the user's row, in the <code>theme</code> column of <code>users</code>, so it follows them to any browser, and it changes at once on the page.</p>
@@ -64,6 +64,7 @@ pub fn panel() -&gt; Ignite {
     <li>Each name is unique on the profile. A second field with the same name also stops the app at startup.</li>
     <li>The values are stored, as JSON, in the <code>profile</code> column of <code>users</code>, keyed by the field's name. The app needs no table of its own.</li>
     <li>A required field must not be blank. A select accepts only its own choices, and a checkbox is stored as true or false.</li>
+    <li>A password-type field is stored hashed, and its value is never shown on the profile.</li>
   </ul>
   <p>Declare the field before you call <code>fairing</code>, the same as a resource. The profile form shows the new field the next time a user opens it.</p>
 @endsection

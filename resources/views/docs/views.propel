@@ -15,8 +15,10 @@
     <li><code>ignite::dashboard</code>, the stat cards and the latest records.</li>
     <li><code>ignite::index</code>, the list of a resource.</li>
     <li><code>ignite::form</code>, the create and edit pages.</li>
+    <li><code>ignite::profile</code>, the signed-in user's profile.</li>
     <li><code>ignite::partials.flash</code>, the message shown after a change.</li>
   </ul>
+  <p>The panel has five views: the dashboard, the list, the form, the sign-in page and the profile. The layout and the flash partial are shared by them.</p>
 
   <h2>Extend the layout</h2>
   <p>A view of the app extends the panel's layout and fills its <code>title</code> and <code>content</code> sections. It needs only its own variables. This view shows the signed-in user, and the route in <a href="/docs/panel">Panel</a> renders it with <code>user_id</code>:</p>
@@ -40,7 +42,7 @@
   <p>An app cannot replace one of the panel's views on its own. The only way to change a panel view is to point the panel at a directory, which replaces all of them.</p>
 
   <h2>Where the views come from</h2>
-  <p>A debug build renders the panel's views with Propel's dev renderer, which reads them on each request. A release build renders compiled views only: the panel's build script compiles the four panel views, the dashboard, the form, the index and the login, into Rust. Both builds embed the views in the <code>ignite-panel</code> binary, so the default needs no view files.</p>
+  <p>A debug build renders the panel's views with Propel's dev renderer, which reads them on each request. A release build renders compiled views only: the panel's build script compiles the five panel views, the dashboard, the index, the form, the login and the profile, into Rust. Both builds embed the views in the <code>ignite-panel</code> binary, so the default needs no view files.</p>
   <p>In a debug build, <code>Ignite::views_dir</code> does this in the builder, and the <code>IGNITE_VIEWS_DIR</code> environment variable does the same from the environment. The builder call wins over the variable. The directory makes the dev renderer read the views from disk, so a developer can edit them without rebuilding. It replaces all of the panel's views, and it must contain <code>layouts/app.propel</code>. <code>fairing()</code> panics when that file is missing. A release build ignores both.</p>
   <pre class="line-numbers"><code class="language-rust">use ignite_panel::Ignite;
 

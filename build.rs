@@ -6,6 +6,7 @@ fn main() {
     propel_compiler::build::Views::new("resources/views")
         .view("docs.introduction", PAGE)
         .view("docs.install", PAGE)
+        .view("docs.deploying", PAGE)
         .view("docs.panel", PAGE)
         .view("docs.profile", PAGE)
         .view("docs.resources", PAGE)

@@ -50,6 +50,7 @@ fn groups() -> Vec<Group> {
             &[
                 ("/docs/introduction", "Introduction"),
                 ("/docs/install", "Installation"),
+                ("/docs/deploying", "Deploying"),
             ],
         ),
         group(

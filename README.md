@@ -2,15 +2,20 @@
 
 The documentation site for [Ignite](https://github.com/lajennylove/Ignite), an admin panel for Rocket.rs. Built on Rocket and [Propel](https://github.com/lajennylove/Propel) views, with Tailwind and Vite for the assets.
 
-The documentation for [Ignite](https://github.com/lajennylove/Ignite): the panel, resources, forms, tables, actions, notifications, widgets and views. Each page says what is not built yet, such as filters and bulk actions.
+The documentation for [Ignite](https://github.com/lajennylove/Ignite) 0.2.0: the panel, resources, forms, tables, actions, notifications, widgets and views. Each page says what is not built yet, such as filters and bulk actions.
 
 ## Dependencies
 
-- Rocket: git revision `3a54d079`
-- Propel: git revision `71ecd1c0c9676db74ce0c90ea3578a12fc043f21` (`propel_rocket`)
-- Diesel: git fork `lajennylove/diesel` at `a07c4b2c20a466ef34f50ca283790f4df20b0699`
+The site is a Rocket app with Propel views. It does not depend on the Ignite crates.
 
-## Run
+- Rocket: git revision `3a54d079`
+- Propel: git revision `09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7` (`propel_rocket`, `propel_runtime`, `propel_macros`, and `propel_compiler` as a build dependency)
+
+The install page for apps pins the Propel and Ignite tag `v0.2.0`. This site's pins are in `Cargo.toml`.
+
+## Developing this site
+
+These steps are for developing the documentation site. An app that uses Ignite does not need them. Node.js 22.12 or newer, or 20.19 or newer, is needed for Vite and Tailwind.
 
 ```sh
 npm install

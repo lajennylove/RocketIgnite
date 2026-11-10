@@ -25,6 +25,7 @@ pub fn panel() -&gt; Ignite {
     <li><code>POST /admin/&lt;slug&gt;/&lt;id&gt;/delete</code>, to delete a row.</li>
     <li><code>GET /admin/profile</code>, the signed-in user's profile, and <code>POST /admin/profile</code>, <code>POST /admin/profile/password</code>, <code>POST /admin/profile/avatar</code>, <code>POST /admin/profile/avatar/remove</code> and <code>GET /admin/profile/avatar</code>, for the profile's own forms and picture.</li>
     <li><code>POST /admin/theme</code>, to save the signed-in user's theme.</li>
+    <li><code>GET /admin/build/&lt;path&gt;</code>, the panel's built assets, such as its stylesheet and script.</li>
   </ul>
 
   <h2>A tour</h2>
@@ -75,17 +76,19 @@ pub fn panel() -&gt; Ignite {
   </figure>
 
   <h2>Configuration</h2>
-  <p>These environment variables matter. They can come from the environment or from a <code>.env</code> file in development:</p>
+  <p>These environment variables matter. They can come from the environment or from a <code>.env</code> file, which <code>Ignite::new()</code> loads. A variable already set in the environment wins over <code>.env</code>, as in Laravel:</p>
   <ul>
     <li><code>DATABASE_URL</code>, a <code>mysql://</code> URL. The panel panics at startup if it is missing or the database cannot be reached.</li>
     <li><code>IGNITE_SECRET_KEY</code>, a base64 string of 32 bytes. It signs the sign-in and flash cookies. Create one with <code>openssl rand -base64 32</code>. A release build stops at startup without a valid key. A debug build uses a random key for that run, with a warning, so sign-ins end when the app restarts.</li>
+    <li><code>IGNITE_TRUSTED_PROXIES</code>, a comma-separated list of IP addresses or CIDR ranges of the reverse proxies in front of the app. See <a href="#login-throttle">Login throttle</a>.</li>
     <li><code>IGNITE_VIEWS_DIR</code>, a folder of the panel's views that replaces the embedded ones, for editing views without a rebuild. It works in debug builds only; a release build ignores it. See <a href="/docs/views">Views</a>.</li>
   </ul>
 
   <h2>Sign-in</h2>
-  <p>The panel's users live in the <code>users</code> table, which the panel owns: an id, a name, an email address that must be unique, a password hash, a creation time, a colour theme, an optional picture and the values of the app's profile fields. See <a href="/docs/profile">Profile</a>. Passwords are hashed with argon2.</p>
+  <p>The panel's users live in the <code>users</code> table, which the panel's migrations create (see <a href="/docs/install">Installation</a>). Each row has an id, a name, an email address that must be unique, a password hash, a creation time, a theme, and the values of the app's profile fields, stored as JSON in the <code>profile</code> column. A picture is not on the row: it is kept in the <code>user_avatars</code> table. See <a href="/docs/profile">Profile</a>. Passwords are hashed with argon2.</p>
   <p>Sign in at <code>/admin/login</code>. A wrong email or password shows the same message for both, so the page does not reveal which emails are registered.</p>
-  <p>A sign-in is a row in the <code>sessions</code> table, and it lasts eight hours. The browser holds only a signed cookie with the row's id, and the panel checks the row on each request. Sign-out deletes the row. The header's <code>Sign out</code> button posts to <code>/admin/logout-everywhere</code>, and it deletes every session of the signed-in user, so it signs them out on every device.</p>
+  <p>A sign-in is a row in the <code>sessions</code> table, and it lasts eight hours. The browser holds only a signed cookie with the row's id, and the panel checks the row on each request. The cookies are marked Secure only in release builds, so local testing over plain HTTP needs a debug build.</p>
+  <p>The header's <code>Sign out</code> button posts to <code>/admin/logout-everywhere</code>. It deletes every session of the signed-in user, so it signs them out on every device. The single-session route, <code>POST /admin/logout</code>, deletes only the current session. It exists, but no button in the panel links to it.</p>
   <p>Every page under the panel needs a session, except sign-in and sign-out. Without one, the request redirects to <code>/admin/login</code>.</p>
   <p>The panel has no sign-up page, no password reset, no remember-me and no roles. To add a user, use the command-line tool in <a href="/docs/install">Installation</a>. It checks the configuration and the email before it asks for the password:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
@@ -93,8 +96,14 @@ pub fn panel() -&gt; Ignite {
   <h2>Forgery protection</h2>
   <p>Each browser has a token, held in the signed <code>ignite_csrf</code> cookie and created on the first panel page it renders. Every panel form carries it as a hidden <code>_token</code> field. Sign-in, sign-out, log out everywhere, create, update and delete check the token before they do anything. A missing or wrong token gets status 419 and a Page Expired page. Your app's own routes are checked the same way, as the next section shows.</p>
 
-  <h2>Login throttle</h2>
-  <p>Each failed sign-in counts against its email, five per 60 seconds, and against its IP address, twenty per 60 seconds. The counts are kept in the <code>login_throttles</code> table, so they hold across restarts and processes. While either count is at its limit, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. A successful sign-in clears the email's count. Requests whose address is unknown share one IP count.</p>
+  <h2 id="login-throttle">Login throttle</h2>
+  <p>Failed sign-ins are counted in the <code>login_throttles</code> table, so the counts hold across restarts and processes. There are two limits, each over 60 seconds:</p>
+  <ul>
+    <li><strong>Per email:</strong> five failed sign-ins for the same email. A successful sign-in clears that email's count.</li>
+    <li><strong>Per IP address:</strong> twenty failed sign-ins from the same address.</li>
+  </ul>
+  <p>While either count is at its limit, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. The same limit applies when a user changes their password from the profile. Expired rows are deleted.</p>
+  <p>The IP address is the socket address of the connection. Behind a reverse proxy, every request then comes from the proxy's address, so all sign-ins share one IP count. To count the real client, list the proxy in <code>IGNITE_TRUSTED_PROXIES</code>. Forwarded headers are read only when the connection comes from a trusted proxy. The address is then the right-most <code>X-Forwarded-For</code> entry that is not itself a trusted proxy. The panel never reads <code>X-Real-IP</code>. Requests whose address is unknown share one IP count.</p>
 
   <h2>Your own pages</h2>
   <p>A route of the app under the panel's address can require a sign-in. Take <code>ignite_panel::AdminUser</code> as an argument, and it is a request guard: without a session the request redirects to the sign-in page. <code>user_id()</code> returns the signed-in user's id. It renders the view in <a href="/docs/views">Views</a>:</p>
