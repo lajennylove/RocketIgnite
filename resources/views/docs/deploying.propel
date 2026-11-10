@@ -26,5 +26,5 @@
   <p>A backup holds password hashes and session rows, so store it as you would store the database itself. A restored database brings back its sessions. A sign-in that was ended after the backup was taken is valid again until that session expires.</p>
 
   <h2>Health check</h2>
-  <p>The panel has no health route yet, so a health check cannot use it.</p>
+  <p>The app serves <code>GET /up</code> at its root, as Laravel does. It returns status 200 with the body <code>OK</code>, and needs no sign-in. Point the health check at it.</p>
 @endsection

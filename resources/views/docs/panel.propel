@@ -97,13 +97,9 @@ pub fn panel() -&gt; Ignite {
   <p>Each browser has a token, held in the signed <code>ignite_csrf</code> cookie and created on the first panel page it renders. Every panel form carries it as a hidden <code>_token</code> field. Sign-in, sign-out, log out everywhere, create, update and delete check the token before they do anything. A missing or wrong token gets status 419 and a Page Expired page. Your app's own routes are checked the same way, as the next section shows.</p>
 
   <h2 id="login-throttle">Login throttle</h2>
-  <p>Failed sign-ins are counted in the <code>login_throttles</code> table, so the counts hold across restarts and processes. There are two limits, each over 60 seconds:</p>
-  <ul>
-    <li><strong>Per email:</strong> five failed sign-ins for the same email. A successful sign-in clears that email's count.</li>
-    <li><strong>Per IP address:</strong> twenty failed sign-ins from the same address.</li>
-  </ul>
-  <p>While either count is at its limit, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. The same limit applies when a user changes their password from the profile. Expired rows are deleted.</p>
-  <p>The IP address is the socket address of the connection. Behind a reverse proxy, every request then comes from the proxy's address, so all sign-ins share one IP count. To count the real client, list the proxy in <code>IGNITE_TRUSTED_PROXIES</code>. Forwarded headers are read only when the connection comes from a trusted proxy. The address is then the right-most <code>X-Forwarded-For</code> entry that is not itself a trusted proxy. The panel never reads <code>X-Real-IP</code>. Requests whose address is unknown share one IP count.</p>
+  <p>Failed sign-ins are counted in the <code>login_throttles</code> table, so the counts hold across restarts and processes. The count is kept under one key: the email in lowercase, a <code>|</code>, and the IP address. Five failed sign-ins under the same key within 60 seconds refuse further attempts for that key. A successful sign-in clears its count.</p>
+  <p>While the limit is reached, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. The same limit applies when a user changes their password from the profile. Expired rows are deleted.</p>
+  <p>The IP address is the socket address of the connection. Behind a reverse proxy, the address is the proxy's, so the key is the same for every client of that proxy. To count the real client, list the proxy in <code>IGNITE_TRUSTED_PROXIES</code>. Forwarded headers are read only when the connection comes from a trusted proxy. The address is then the right-most <code>X-Forwarded-For</code> entry that is not itself a trusted proxy. The panel never reads <code>X-Real-IP</code>.</p>
 
   <h2>Your own pages</h2>
   <p>A route of the app under the panel's address can require a sign-in. Take <code>ignite_panel::AdminUser</code> as an argument, and it is a request guard: without a session the request redirects to the sign-in page. <code>user_id()</code> returns the signed-in user's id. It renders the view in <a href="/docs/views">Views</a>:</p>
