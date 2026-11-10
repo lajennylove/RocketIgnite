@@ -7,6 +7,7 @@ fn main() {
         .view("docs.introduction", PAGE)
         .view("docs.install", PAGE)
         .view("docs.panel", PAGE)
+        .view("docs.profile", PAGE)
         .view("docs.resources", PAGE)
         .view("docs.forms", PAGE)
         .view("docs.tables", PAGE)

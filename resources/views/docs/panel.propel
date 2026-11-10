@@ -23,7 +23,56 @@ pub fn panel() -&gt; Ignite {
     <li><code>GET /admin/&lt;slug&gt;/new</code> and <code>POST /admin/&lt;slug&gt;</code>, to create a row.</li>
     <li><code>GET /admin/&lt;slug&gt;/&lt;id&gt;/edit</code> and <code>POST /admin/&lt;slug&gt;/&lt;id&gt;</code>, to update a row.</li>
     <li><code>POST /admin/&lt;slug&gt;/&lt;id&gt;/delete</code>, to delete a row.</li>
+    <li><code>GET /admin/profile</code>, the signed-in user's profile, and <code>POST /admin/profile</code>, <code>POST /admin/profile/password</code>, <code>POST /admin/profile/avatar</code>, <code>POST /admin/profile/avatar/remove</code> and <code>GET /admin/profile/avatar</code>, for the profile's own forms and picture.</li>
+    <li><code>POST /admin/theme</code>, to save the signed-in user's theme.</li>
   </ul>
+
+  <h2>A tour</h2>
+  <p>These screenshots show the panel with the sample data of the example app. The sign-in page comes first, then the pages a signed-in user reaches from the sidebar. Each one is shown on a desktop and on a phone.</p>
+  <figure class="docs-figure my-8">
+    <picture>
+      <source media="(max-width: 640px)" type="image/webp" srcset="{{ asset('resources/images/panel/panel-login-light-mobile.webp') }}">
+      <img src="{{ asset('resources/images/panel/panel-login-light-desktop.webp') }}" alt="The sign-in page, with an email field, a password field and a Sign in button, centred under the Ignite name." width="1280" height="800" loading="lazy" decoding="async" class="w-full rounded-md border border-hairline">
+    </picture>
+    <figcaption class="mt-2 text-sm text-text">The sign-in page.</figcaption>
+  </figure>
+  <figure class="docs-figure my-8">
+    <picture>
+      <source media="(max-width: 640px)" type="image/webp" srcset="{{ asset('resources/images/panel/panel-dashboard-light-mobile.webp') }}">
+      <img src="{{ asset('resources/images/panel/panel-dashboard-light-desktop.webp') }}" alt="The dashboard in the light theme: a welcome card, two tinted stat tiles, and a table of the latest users." width="1280" height="800" loading="lazy" decoding="async" class="w-full rounded-md border border-hairline">
+    </picture>
+    <figcaption class="mt-2 text-sm text-text">The dashboard, in the light theme.</figcaption>
+  </figure>
+  <figure class="docs-figure my-8">
+    <picture>
+      <source media="(max-width: 640px)" type="image/webp" srcset="{{ asset('resources/images/panel/panel-users-light-mobile.webp') }}">
+      <img src="{{ asset('resources/images/panel/panel-users-light-desktop.webp') }}" alt="The Users list in the light theme: a search box, a table of users with Edit and Delete buttons, and a page count." width="1280" height="800" loading="lazy" decoding="async" class="w-full rounded-md border border-hairline">
+    </picture>
+    <figcaption class="mt-2 text-sm text-text">The list of a resource, here Users, with search, sortable columns and paging.</figcaption>
+  </figure>
+  <figure class="docs-figure my-8">
+    <picture>
+      <source media="(max-width: 640px)" type="image/webp" srcset="{{ asset('resources/images/panel/panel-new-user-light-mobile.webp') }}">
+      <img src="{{ asset('resources/images/panel/panel-new-user-light-desktop.webp') }}" alt="The New User form in the light theme: fields for name, email and password, with Create and Cancel buttons." width="1280" height="800" loading="lazy" decoding="async" class="w-full rounded-md border border-hairline">
+    </picture>
+    <figcaption class="mt-2 text-sm text-text">The form that creates a record. Its fields come from the resource.</figcaption>
+  </figure>
+  <h2>Dark theme</h2>
+  <p>A signed-in user switches the theme with the round button beside Sign out. The choice is theirs: it is saved with their account, and everyone starts on the light theme. The same pages in the dark theme:</p>
+  <figure class="docs-figure my-8">
+    <picture>
+      <source media="(max-width: 640px)" type="image/webp" srcset="{{ asset('resources/images/panel/panel-dashboard-dark-mobile.webp') }}">
+      <img src="{{ asset('resources/images/panel/panel-dashboard-dark-desktop.webp') }}" alt="The dashboard in the dark theme, with the same tiles and table on a dark background." width="1280" height="800" loading="lazy" decoding="async" class="w-full rounded-md border border-hairline">
+    </picture>
+    <figcaption class="mt-2 text-sm text-text">The dashboard, in the dark theme.</figcaption>
+  </figure>
+  <figure class="docs-figure my-8">
+    <picture>
+      <source media="(max-width: 640px)" type="image/webp" srcset="{{ asset('resources/images/panel/panel-users-dark-mobile.webp') }}">
+      <img src="{{ asset('resources/images/panel/panel-users-dark-desktop.webp') }}" alt="The Users list in the dark theme, with the same table on a dark background." width="1280" height="800" loading="lazy" decoding="async" class="w-full rounded-md border border-hairline">
+    </picture>
+    <figcaption class="mt-2 text-sm text-text">The Users list, in the dark theme.</figcaption>
+  </figure>
 
   <h2>Configuration</h2>
   <p>These environment variables matter. They can come from the environment or from a <code>.env</code> file in development:</p>
@@ -34,9 +83,9 @@ pub fn panel() -&gt; Ignite {
   </ul>
 
   <h2>Sign-in</h2>
-  <p>The panel's users live in the <code>users</code> table, which the panel owns: an id, a name, an email address that must be unique, a password hash and a creation time. Passwords are hashed with argon2.</p>
+  <p>The panel's users live in the <code>users</code> table, which the panel owns: an id, a name, an email address that must be unique, a password hash, a creation time, a colour theme, an optional picture and the values of the app's profile fields. See <a href="/docs/profile">Profile</a>. Passwords are hashed with argon2.</p>
   <p>Sign in at <code>/admin/login</code>. A wrong email or password shows the same message for both, so the page does not reveal which emails are registered.</p>
-  <p>A sign-in is a row in the <code>sessions</code> table, and it lasts eight hours. The browser holds only a signed cookie with the row's id, and the panel checks the row on each request. Sign-out deletes the row. The header's <code>Sign out everywhere</code> button, which posts to <code>/admin/logout-everywhere</code>, deletes every session of the signed-in user.</p>
+  <p>A sign-in is a row in the <code>sessions</code> table, and it lasts eight hours. The browser holds only a signed cookie with the row's id, and the panel checks the row on each request. Sign-out deletes the row. The header's <code>Sign out</code> button posts to <code>/admin/logout-everywhere</code>, and it deletes every session of the signed-in user, so it signs them out on every device.</p>
   <p>Every page under the panel needs a session, except sign-in and sign-out. Without one, the request redirects to <code>/admin/login</code>.</p>
   <p>The panel has no sign-up page, no password reset, no remember-me and no roles. To add a user, use the command-line tool in <a href="/docs/install">Installation</a>. It checks the configuration and the email before it asks for the password:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>

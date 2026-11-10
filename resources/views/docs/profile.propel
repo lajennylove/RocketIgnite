@@ -1,0 +1,69 @@
+@extends('layouts.app')
+
+@section('title')Profile@endsection
+@section('description')The profile lets each signed-in user change their name, email, password and picture, and the app can add its own fields to it.@endsection
+
+@section('content')
+  <h1>{{ $title }}</h1>
+  <p>The profile is the page where a signed-in user manages their own account. It is linked from the name in the top bar. Every panel user has it, and it needs no set-up.</p>
+
+  <figure class="docs-figure my-8">
+    <picture>
+      <source media="(max-width: 640px)" type="image/webp" srcset="{{ asset('resources/images/panel/panel-profile-light-mobile.webp') }}">
+      <img src="{{ asset('resources/images/panel/panel-profile-light-desktop.webp') }}" alt="The profile page in the light theme, on a desktop. Three cards: Your details, with the name, the email and a Job title field that the app added; Picture, with the user initials and an upload button; and Password, with three fields." width="1280" height="800" loading="lazy" decoding="async" class="w-full rounded-md border border-hairline">
+    </picture>
+    <figcaption class="mt-2 text-sm text-text">The profile in the light theme. The Job title field is added by the app.</figcaption>
+  </figure>
+
+  <h2>What a user can change</h2>
+  <ul>
+    <li>Their <strong>name</strong> and <strong>email</strong>. The email must be unique: if another user has it, the form says so and keeps what was typed.</li>
+    <li>The <strong>fields the app adds</strong>, such as a job title. They appear in the same form, under the email.</li>
+    <li>Their <strong>password</strong>, with the current password, and the new one typed twice.</li>
+    <li>Their <strong>picture</strong>, or nothing, in which case their initials show.</li>
+  </ul>
+  <p>Each part is its own form, so a mistake in one does not clear the others. The profile page is <code>GET /admin/profile</code>, and each form posts to its own route, all under <code>/admin/profile</code>.</p>
+
+  <h2>Picture</h2>
+  <p>A picture is a PNG, a JPEG or a WebP image, up to 1 MB. The panel reads the type from the file's first bytes, so a file renamed to <code>.png</code> is still refused unless it really is an image. The picture replaces the initials in the profile card and in the top bar. <strong>Remove picture</strong> brings the initials back.</p>
+  <p>The picture is served from <code>/admin/profile/avatar</code>, and it is stored in the <code>user_avatars</code> table, so the <code>users</code> row the panel reads on every request stays small.</p>
+
+  <h2>Password</h2>
+  <p>A password change needs the current password. The new password must be at least eight characters, the same minimum as the command-line tool, and typed twice. Once it changes, every other session of the user ends, on every other device, so an old sign-in cannot keep working. The session of the current browser stays signed in.</p>
+
+  <h2>Theme</h2>
+  <p>The round button beside <strong>Sign out</strong> in the top bar switches the panel between the light and the dark theme. Every user starts on the light theme. The choice is saved on the user's row, in the <code>theme</code> column of <code>users</code>, so it follows them to any browser, and it changes at once on the page.</p>
+  <p>The dark theme looks like this:</p>
+  <figure class="docs-figure my-8">
+    <picture>
+      <source media="(max-width: 640px)" type="image/webp" srcset="{{ asset('resources/images/panel/panel-profile-dark-mobile.webp') }}">
+      <img src="{{ asset('resources/images/panel/panel-profile-dark-desktop.webp') }}" alt="The profile page in the dark theme, on a desktop, with the same three cards on a dark background." width="1280" height="800" loading="lazy" decoding="async" class="w-full rounded-md border border-hairline">
+    </picture>
+    <figcaption class="mt-2 text-sm text-text">The profile in the dark theme.</figcaption>
+  </figure>
+
+  <h2>For developers</h2>
+  <p>An app adds fields to every profile on the same builder it uses for resources. A profile field is an <code>ignite_core::Field</code>, the type a resource uses for its form fields, so it has a name, a label, a kind (text, a number, a checkbox, a select and so on) and whether it is required. The example app declares a <strong>Job title</strong> field, and it appears in the profile form:</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_core::{Field, FieldKind};
+use ignite_panel::Ignite;
+
+pub fn panel() -&gt; Ignite {
+    Ignite::new()
+        .resource::&lt;users::Users&gt;()
+        // An app&#x27;s own profile field: every user can set it on their profile.
+        .profile_field(Field {
+            name: &quot;job_title&quot;,
+            label: &quot;Job title&quot;,
+            kind: FieldKind::Text,
+            required: false,
+        })
+}</code></pre>
+  <p>Some rules apply to profile fields:</p>
+  <ul>
+    <li>The name <code>name</code> and <code>email</code> are the panel's own. Declaring a field with either name stops the app at startup.</li>
+    <li>Each name is unique on the profile. A second field with the same name also stops the app at startup.</li>
+    <li>The values are stored, as JSON, in the <code>profile</code> column of <code>users</code>, keyed by the field's name. The app needs no table of its own.</li>
+    <li>A required field must not be blank. A select accepts only its own choices, and a checkbox is stored as true or false.</li>
+  </ul>
+  <p>Declare the field before you call <code>fairing</code>, the same as a resource. The profile form shows the new field the next time a user opens it.</p>
+@endsection

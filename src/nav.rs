@@ -52,7 +52,10 @@ fn groups() -> Vec<Group> {
                 ("/docs/install", "Installation"),
             ],
         ),
-        group("Admin panel", &[("/docs/panel", "Panel")]),
+        group(
+            "Admin panel",
+            &[("/docs/panel", "Panel"), ("/docs/profile", "Profile")],
+        ),
         group(
             "Resources",
             &[

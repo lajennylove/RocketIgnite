@@ -27,6 +27,7 @@ pub(crate) fn render_page(name: &str, context: &DocPage) -> PropelView {
         "docs.introduction" => compiled::docs::introduction::render(context, &assets),
         "docs.install" => compiled::docs::install::render(context, &assets),
         "docs.panel" => compiled::docs::panel::render(context, &assets),
+        "docs.profile" => compiled::docs::profile::render(context, &assets),
         "docs.resources" => compiled::docs::resources::render(context, &assets),
         "docs.forms" => compiled::docs::forms::render(context, &assets),
         "docs.tables" => compiled::docs::tables::render(context, &assets),
