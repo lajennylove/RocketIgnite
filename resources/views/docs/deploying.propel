@@ -31,9 +31,9 @@ ip_header = false</code></pre>
 
   <h2>Deploying with GitHub Actions</h2>
   <p>The recommended way to deploy is to build in CI and serve on the server. GitHub Actions compiles the release binary and the assets on an Ubuntu 24.04 runner, uploads them to the server with a key that can only write release files, and then switches the live release with a second key. The server never compiles anything, so a deploy does not use its memory or processor. A failed health check switches the previous release back in.</p>
-  <p>The template, with the workflow, the server scripts and a step-by-step guide, is in <a href="https://github.com/lajennylove/RocketBoost/tree/deploy-template/deploy-template">the deploy-template folder</a> of the RocketBoost repository.</p>
+  <p>The template, with the workflow, the server scripts and a step-by-step guide, is in <a target="_new" rel="noopener" href="https://github.com/lajennylove/RocketBoost/tree/deploy-template/deploy-template">the deploy-template folder</a> of the RocketBoost repository.</p>
 
-  <p>The three files, copy-ready. The same files are in <a href="https://github.com/lajennylove/RocketBoost/tree/deploy-template/deploy-template">the deploy-template folder</a>.</p>
+  <p>The three files, copy-ready. The same files are in <a target="_new" rel="noopener" href="https://github.com/lajennylove/RocketBoost/tree/deploy-template/deploy-template">the deploy-template folder</a>.</p>
   <details class="docs-details my-6">
     <summary class="cursor-pointer font-semibold text-heading">.github/workflows/deploy.yml</summary>
     <pre class="line-numbers"><code class="language-yaml"># GitHub Actions template: build a Rocket app in CI, upload the release to the server,
