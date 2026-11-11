@@ -18,7 +18,7 @@
     <li><code>ignite::profile</code>, the signed-in user's profile.</li>
     <li><code>ignite::partials.flash</code>, the message shown after a change.</li>
   </ul>
-  <p>The panel has five views: the dashboard, the list, the form, the sign-in page and the profile. The layout and the flash partial are shared by them.</p>
+  <p>The panel has seven views: the dashboard, the list, the form, the sign-in page, the profile, and the forgot-password and reset-password pages. The layout and the flash partial are shared by them.</p>
 
   <h2>Extend the layout</h2>
   <p>A view of the app extends the panel's layout and fills its <code>title</code> and <code>content</code> sections. It needs only its own variables. This view shows the signed-in user, and the route in <a href="/docs/panel">Panel</a> renders it with <code>user_id</code>:</p>

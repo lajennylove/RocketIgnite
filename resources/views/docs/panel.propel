@@ -25,6 +25,7 @@ pub fn panel() -&gt; Ignite {
     <li><code>POST /admin/&lt;slug&gt;/&lt;id&gt;/delete</code>, to delete a row.</li>
     <li><code>GET /admin/profile</code>, the signed-in user's profile, and <code>POST /admin/profile</code>, <code>POST /admin/profile/password</code>, <code>POST /admin/profile/avatar</code>, <code>POST /admin/profile/avatar/remove</code> and <code>GET /admin/profile/avatar</code>, for the profile's own forms and picture.</li>
     <li><code>POST /admin/theme</code>, to save the signed-in user's theme.</li>
+    <li><code>GET /admin/password/forgot</code> and <code>POST /admin/password/forgot</code>, to ask for a reset link by email, and <code>GET /admin/password/reset/&lt;token&gt;</code> and <code>POST /admin/password/reset</code>, to set a new password from the link.</li>
     <li><code>GET /admin/build/&lt;path&gt;</code>, the panel's built assets, such as its stylesheet and script.</li>
   </ul>
 
@@ -81,24 +82,46 @@ pub fn panel() -&gt; Ignite {
     <li><code>DATABASE_URL</code>, a <code>mysql://</code> URL. <code>Ignite::new()</code> panics if it is missing. The panel connects its Orbit pool when the app ignites, and the launch stops with an error if the database cannot be reached.</li>
     <li><code>IGNITE_SECRET_KEY</code>, a base64 string of 32 bytes. It signs the sign-in and flash cookies. Create one with <code>openssl rand -base64 32</code>. A release build stops at startup without a valid key. A debug build uses a random key for that run, with a warning, so sign-ins end when the app restarts.</li>
     <li><code>IGNITE_TRUSTED_PROXIES</code>, a comma-separated list of IP addresses or CIDR ranges of the reverse proxies in front of the app. See <a href="#login-throttle">Login throttle</a>.</li>
+    <li><code>IGNITE_APP_URL</code>, the app's own URL, such as <code>https://app.example.test</code>. Password reset links are built from it. Without it, they use the scheme and host of the request, which a client can set, so set it in production.</li>
+    <li><code>EMAILIT_API_KEY</code> and <code>IGNITE_MAIL_FROM</code>, for sending mail with Emailit. The key is never logged, and the sender's domain must be verified in Emailit. See <a href="#password-reset">Password reset</a>.</li>
     <li><code>IGNITE_VIEWS_DIR</code>, a folder of the panel's views that replaces the embedded ones, for editing views without a rebuild. It works in debug builds only; a release build ignores it. See <a href="/docs/views">Views</a>.</li>
   </ul>
 
   <h2>Sign-in</h2>
   <p>The panel's users live in the <code>users</code> table, which the panel's migrations create (see <a href="/docs/install">Installation</a>). Each row has an id, a name, an email address that must be unique, a password hash, a creation time, a theme, and the values of the app's profile fields, stored as JSON in the <code>profile</code> column. A picture is not on the row: it is kept in the <code>user_avatars</code> table. See <a href="/docs/profile">Profile</a>. Passwords are hashed with argon2.</p>
   <p>Sign in at <code>/admin/login</code>. A wrong email or password shows the same message for both, so the page does not reveal which emails are registered.</p>
-  <p>A sign-in is a row in the <code>sessions</code> table, and it lasts eight hours. The browser holds only a signed cookie with the row's id, and the panel checks the row on each request. The cookies are marked Secure only in release builds, so local testing over plain HTTP needs a debug build.</p>
+  <p>A disabled user cannot sign in either. They get the same message as for a wrong password, and disabling a user ends their sessions at once. An administrator disables and enables an account with <code>ignite user disable &lt;email&gt;</code> and <code>ignite user enable &lt;email&gt;</code>. The last enabled super-admin cannot be disabled.</p>
+  <p>A sign-in is a row in the <code>sessions</code> table, and it lasts eight hours. The browser holds only a signed cookie with the row's id, and the panel checks the row on each request. The panel's cookies get the <code>Secure</code> flag when the request was made over HTTPS, directly or through a trusted proxy. A plain HTTP request, such as a local development server, gets cookies without the flag, so the browser keeps them.</p>
   <p>The header's <code>Sign out</code> button posts to <code>/admin/logout-everywhere</code>. It deletes every session of the signed-in user, so it signs them out on every device. The single-session route, <code>POST /admin/logout</code>, deletes only the current session. It exists, but no button in the panel links to it.</p>
-  <p>Every page under the panel needs a session, except sign-in and sign-out. Without one, the request redirects to <code>/admin/login</code>.</p>
-  <p>The panel has no sign-up page, no password reset, no remember-me and no roles. To add a user, use the command-line tool in <a href="/docs/install">Installation</a>. It checks the configuration and the email before it asks for the password:</p>
+  <p>Every page under the panel needs a session, except sign-in, sign-out and the password reset pages. Without one, the request redirects to <code>/admin/login</code>.</p>
+  <p>The panel has no sign-up page and no remember-me. To add a user, use the command-line tool in <a href="/docs/install">Installation</a>. It checks the configuration and the email before it asks for the password:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- user create --email you@example.com --name "You"</code></pre>
+
+  <h2 id="password-reset">Password reset</h2>
+  <p>A user who forgot their password can ask for a reset link by email. The sign-in page links to <code>/admin/password/forgot</code>. The panel answers every request with the same message, so the form does not show which emails have an account. A link is sent only to an account that is enabled.</p>
+  <p>The link carries a random token. The panel keeps only a hash of it, and the link works for 60 minutes and once. A link is not sent again within 60 seconds of the last one to the same email, so a double submit sends one message. The reset form asks for the new password twice, with the same rules as the change-password form, and a reset ends every session of the user. Requests count against the same login throttle as sign-in: five in a minute for each email and address.</p>
+  <p>The panel sends email through a mailer that the app chooses. Until the app gives one, a send is refused and logged, so nothing is sent by accident. The app gives a mailer with <code>Ignite::new().mailer(EmailitMailer::from_env())</code>, and sets <code>EMAILIT_API_KEY</code> and <code>IGNITE_MAIL_FROM</code>. The reset link is built from <code>IGNITE_APP_URL</code>, which should be set in production.</p>
+
+  <h2>Roles and permissions</h2>
+  <p>The panel follows Filament and its standard plugin, Filament Shield. Each resource has five abilities, named after its slug: <code>&lt;slug&gt;.viewAny</code> to see the list and the resource in the navigation and on the dashboard, <code>&lt;slug&gt;.view</code> (reserved for a detail page that the panel does not have yet, so nothing checks it), <code>&lt;slug&gt;.create</code>, <code>&lt;slug&gt;.update</code> and <code>&lt;slug&gt;.delete</code>. A user holds the abilities of their roles. The panel registers the abilities when the app starts, so start the app once after you add a resource.</p>
+  <pre class="line-numbers"><code class="language-bash">ignite role create editors
+ignite role grant editors users.viewAny
+ignite role grant editors users.update
+ignite user role add editor@example.com editors
+ignite user roles editor@example.com
+ignite user role remove editor@example.com editors</code></pre>
+  <p><code>super-admin</code> is a role that passes every check, as Filament Shield's super admin does. The migration that adds roles gives it to every user who exists when it runs, so an upgrade locks nobody out. A user created later has no roles until <code>ignite user role add</code> gives one. The last super-admin cannot lose the role.</p>
+  <p>A request the user may not make gets status 403. The navigation lists only the resources the user may view, the New button needs <code>create</code>, the Edit button needs <code>update</code>, and the Delete button needs <code>delete</code>. An app's own route can check an ability with <code>user.can("reports.view")</code>, where <code>user</code> is an <code>AdminUser</code> request guard. The panel does not edit roles yet. Use the command.</p>
+
+  <h2>Account from the command line</h2>
+  <p>The <code>ignite user password &lt;email&gt;</code> command sets a new password for a user, and ends their sessions, as the change-password form does for the other devices.</p>
 
   <h2>Forgery protection</h2>
   <p>Each browser has a token, held in the signed <code>ignite_csrf</code> cookie and created on the first panel page it renders. Every panel form carries it as a hidden <code>_token</code> field. Sign-in, sign-out, log out everywhere, create, update and delete check the token before they do anything. A missing or wrong token gets status 419 and a Page Expired page. Your app's own routes are checked the same way, as the next section shows.</p>
 
   <h2 id="login-throttle">Login throttle</h2>
   <p>Failed sign-ins are counted in the <code>login_throttles</code> table, so the counts hold across restarts and processes. The count is kept under one key: the email in lowercase, a <code>|</code>, and the IP address. Five failed sign-ins under the same key within 60 seconds refuse further attempts for that key. A successful sign-in clears its count.</p>
-  <p>While the limit is reached, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. The same limit applies when a user changes their password from the profile. Expired rows are deleted.</p>
+  <p>While the limit is reached, sign-in is refused with status 429, a <code>Retry-After</code> header with the seconds to wait, and the sign-in page. The same limit applies when a user changes their password from the profile, under a key of its own, and a password reset request counts against the sign-in limit for its email and address. Expired rows are deleted.</p>
   <p>The IP address is the socket address of the connection. Behind a reverse proxy, the address is the proxy's, so the key is the same for every client of that proxy. To count the real client, list the proxy in <code>IGNITE_TRUSTED_PROXIES</code>. Forwarded headers are read only when the connection comes from a trusted proxy. The address is then the right-most <code>X-Forwarded-For</code> entry that is not itself a trusted proxy. The panel never reads <code>X-Real-IP</code>.</p>
 
   <h2>Your own pages</h2>

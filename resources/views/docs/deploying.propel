@@ -238,7 +238,8 @@ WantedBy=multi-user.target</code></pre>
 
   <h2>Backups</h2>
   <p>Back up the database with <code>mysqldump --single-transaction</code>. The option takes a consistent snapshot of InnoDB tables without locking them. Include the panel's tables and the app's own tables:</p>
-  <pre class="line-numbers"><code class="language-bash">mysqldump --single-transaction your_database users sessions login_throttles user_avatars __diesel_schema_migrations your_app_table</code></pre>
+  <pre class="line-numbers"><code class="language-bash">mysqldump --single-transaction your_database users sessions login_throttles user_avatars roles permissions role_permission role_user password_reset_tokens __diesel_schema_migrations your_app_table</code></pre>
+  <p>The panel's tables are <code>users</code>, <code>sessions</code>, <code>login_throttles</code>, <code>user_avatars</code>, <code>roles</code>, <code>permissions</code>, <code>role_permission</code>, <code>role_user</code> and <code>password_reset_tokens</code>. Include them all, with the migrations table.</p>
   <p>The migrations table is part of the panel's state. A restored database needs it to know which migrations have run, so include it.</p>
   <p>A backup holds password hashes and session rows, so store it as you would store the database itself. A restored database brings back its sessions. A sign-in that was ended after the backup was taken is valid again until that session expires.</p>
 
