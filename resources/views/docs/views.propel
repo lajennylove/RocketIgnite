@@ -16,6 +16,8 @@
     <li><code>ignite::index</code>, the list of a resource.</li>
     <li><code>ignite::form</code>, the create and edit pages.</li>
     <li><code>ignite::profile</code>, the signed-in user's profile.</li>
+    <li><code>ignite::forgot</code>, the page that asks for a reset link.</li>
+    <li><code>ignite::reset</code>, the page that sets a new password from a link.</li>
     <li><code>ignite::partials.flash</code>, the message shown after a change.</li>
   </ul>
   <p>The panel has seven views: the dashboard, the list, the form, the sign-in page, the profile, and the forgot-password and reset-password pages. The layout and the flash partial are shared by them.</p>
@@ -33,16 +35,18 @@
   &lt;p&gt;Signed in as user @{{ $user_id }}.&lt;/p&gt;
 @@endsection</code></pre>
   <p>The view is <code>resources/views/account.propel</code>, and the view name is <code>account</code>.</p>
-  <p>The layout also yields three sections for the panel's own chrome. The panel's pages set them, and an app view can set them too:</p>
+  <p>Besides <code>title</code> and <code>content</code>, the layout yields five sections for the panel's own chrome. The panel's pages set them, and an app view can set them too. All of them are empty by default, so an app view has no sidebar, top bar or message unless it sets them:</p>
   <ul>
-    <li><code>ignite_home</code>, the brand link in the header. It defaults to <code>/admin</code>.</li>
-    <li><code>ignite_nav</code>, the navigation and the sign-out button. It is empty by default, so an app view has no navigation unless it sets this section.</li>
-    <li><code>ignite_flash</code>, the message shown after a change. It is empty by default.</li>
+    <li><code>ignite_html</code>, attributes for the <code>html</code> element. The panel sets <code>data-theme</code> here.</li>
+    <li><code>ignite_aside</code>, the sidebar, before the main column. The panel's navigation partial goes here.</li>
+    <li><code>ignite_column</code>, classes for the column that holds the top bar and the content. The panel adds a class here when it has a sidebar.</li>
+    <li><code>ignite_bar</code>, the top bar above the content. The panel's top-bar partial goes here, with the brand link, the theme button and Sign out.</li>
+    <li><code>ignite_flash</code>, the message shown after a change, above the content.</li>
   </ul>
   <p>An app cannot replace one of the panel's views on its own. The only way to change a panel view is to point the panel at a directory, which replaces all of them.</p>
 
   <h2>Where the views come from</h2>
-  <p>A debug build renders the panel's views with Propel's dev renderer, which reads them on each request. A release build renders compiled views only: the panel's build script compiles the five panel views, the dashboard, the index, the form, the login and the profile, into Rust. Both builds embed the views in the <code>ignite-panel</code> binary, so the default needs no view files.</p>
+  <p>A debug build renders the panel's views with Propel's dev renderer, which reads them on each request. A release build renders compiled views only: the panel's build script compiles the seven panel views, the dashboard, the form, the forgot-password page, the index, the login, the profile and the reset-password page, into Rust. Both builds embed the views in the <code>ignite-panel</code> binary, so the default needs no view files.</p>
   <p>In a debug build, <code>Ignite::views_dir</code> does this in the builder, and the <code>IGNITE_VIEWS_DIR</code> environment variable does the same from the environment. The builder call wins over the variable. The directory makes the dev renderer read the views from disk, so a developer can edit them without rebuilding. It replaces all of the panel's views, and it must contain <code>layouts/app.propel</code>. <code>fairing()</code> panics when that file is missing. A release build ignores both.</p>
   <pre class="line-numbers"><code class="language-rust">use ignite_panel::Ignite;
 
