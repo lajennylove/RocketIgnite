@@ -14,21 +14,21 @@
   </ul>
 
   <h2>Pinned versions</h2>
-  <p>This page documents the Orbit port of Ignite, at revision <code>139d342</code> of its main branch. The port has no release tag yet, so the pins are revisions. Use the same pins as Ignite, so the app builds one copy of each crate:</p>
+  <p>This page documents the Orbit port of Ignite, at revision <code>d3d1975</code> of its main branch. Ignite is not on crates.io, so its pin is a revision. Use the same pins as Ignite, so the app builds one copy of each crate:</p>
   <ul>
-    <li>Orbit (<code>orbit-orm</code>), from git, at revision <code>e3b8668</code>. Orbit is the database layer, and the models derive its <code>OrbitModel</code>.</li>
-    <li>Ignite, from git, at revision <code>139d342</code>: <code>ignite-core</code> and <code>ignite-panel</code>.</li>
+    <li>Orbit (<code>orbit-orm</code>) 0.1.0, from crates.io. Orbit is the database layer, and the models derive its <code>OrbitModel</code>.</li>
+    <li>Ignite, from git, at revision <code>d3d1975</code>: <code>ignite-core</code> and <code>ignite-panel</code>.</li>
     <li>Rocket and Propel, from crates.io: <code>rocket</code> 0.5.2, <code>propel_rocket</code> and <code>propel_runtime</code> 0.2.0, and <code>propel_compiler</code> 0.2.0 as a build dependency. Ignite resolves these from crates.io, so the app must use the same releases. A git pin of either would build a second copy, and the panel's views would not match the app's.</li>
   </ul>
   <p>Diesel is no longer used. Ignite does not need a MariaDB client library to build.</p>
 
   <h2>Add the crates</h2>
   <p>Add Ignite to <code>Cargo.toml</code>, with the pins above:</p>
-  <pre class="line-numbers"><code class="language-toml"># Ignite and Orbit, from git at the revisions above. Rocket and Propel from crates.io.
+  <pre class="line-numbers"><code class="language-toml"># Ignite from git at the revision above. Orbit, Rocket and Propel from crates.io.
 [dependencies]
-ignite-panel = { git = "https://github.com/lajennylove/Ignite", rev = "139d342b27d7142b5cf37a6c6848bc5eca1b741f" }
-ignite-core = { git = "https://github.com/lajennylove/Ignite", rev = "139d342b27d7142b5cf37a6c6848bc5eca1b741f" }
-orbit-orm = { git = "https://github.com/lajennylove/Orbit", rev = "e3b8668270cc8c3f2c17b69b9257c442707be1a4" }
+ignite-panel = { git = "https://github.com/lajennylove/Ignite", rev = "d3d1975ae107b4e7e7dce92a20f1c83a73428866" }
+ignite-core = { git = "https://github.com/lajennylove/Ignite", rev = "d3d1975ae107b4e7e7dce92a20f1c83a73428866" }
+orbit-orm = "0.1.0"
 rocket = "0.5.2"
 propel_rocket = "0.2.0"
 propel_runtime = "0.2.0"
