@@ -25,7 +25,7 @@
   <p>Version 1 leaves these out:</p>
   <ul>
     <li>Infolists, a read-only view of one record.</li>
-    <li>Several panels, themes and translations.</li>
+    <li>Several panels and translations. The panel has a light and a dark theme, which each user switches with the button in the top bar.</li>
     <li>Relations between tables, file uploads, filters and bulk actions.</li>
     <li>Charts. The widgets are stat cards and tables of the newest records.</li>
   </ul>

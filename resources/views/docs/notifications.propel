@@ -1,18 +1,19 @@
 @extends('layouts.app')
 
 @section('title')Notifications@endsection
-@section('description')The panel messages after a create, update or delete, and its errors on forms and sign-in. Your own flash messages and toasts are not built yet.@endsection
+@section('description')The panel messages after a change, on the profile, the forgot-password and reset pages, and its errors on forms and sign-in. Your own flash messages and toasts are not built yet.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>
   <p>The panel tells the user what happened with a message, and with the errors on a form.</p>
 
   <h2>Flash messages</h2>
-  <p>After a change, the panel redirects to the list and shows one message above the content:</p>
+  <p>After a change, the panel redirects and shows one message above the content. The page it returns to depends on the change:</p>
   <ul>
-    <li><code>Record created.</code> after a create.</li>
-    <li><code>Changes saved.</code> after an update.</li>
-    <li><code>Record deleted.</code> after a delete.</li>
+    <li>After a create, update or delete of a resource, the panel redirects to the list: <code>Record created.</code>, <code>Changes saved.</code> or <code>Record deleted.</code></li>
+    <li>On the profile, the panel redirects to the profile: <code>Profile saved.</code>, <code>Picture saved.</code>, <code>Picture removed.</code>, <code>Password changed. Other devices were signed out.</code>, or <code>Choose a PNG, JPEG or WebP picture of up to 1 MB.</code> when a picture is refused.</li>
+    <li>On the forgot-password page, the panel redirects back to it with <code>If an account exists for that email, we have emailed a password reset link.</code>. The same message shows for every request.</li>
+    <li>After a password reset, the panel redirects to the sign-in page with <code>Your password has been reset. Sign in with the new password.</code></li>
   </ul>
   <p>A message shows once, on the next page the user loads. It is kept in a signed cookie, so the server holds no state for it.</p>
 
@@ -32,7 +33,7 @@
 
   <h2>Not built yet</h2>
   <ul>
-    <li><strong>Your own messages.</strong> The panel sets its three messages itself. An app cannot set a flash message in v1.</li>
+    <li><strong>Your own messages.</strong> The panel sets these messages itself. An app cannot set a flash message in v1.</li>
     <li><strong>Toasts.</strong> Messages appear in the page and do not fade away.</li>
   </ul>
 @endsection
