@@ -18,8 +18,8 @@
 
   <h2>Release build</h2>
   <p>Build with <code>cargo build --release</code>. A release build renders compiled views, so the deployed app needs no view files.</p>
-  <p>A release build needs <code>IGNITE_SECRET_KEY</code>, a base64 string of 32 bytes, and stops at startup without a valid one. Create the key with <code>openssl rand -base64 32</code>, and set it in the server's environment, not in git.</p>
-  <p>Cookies are marked Secure only in release builds. A release build therefore needs HTTPS for sign-in to work in a browser. Local testing over plain HTTP needs a debug build.</p>
+  <p>A release build needs <code>IGNITE_SECRET_KEY</code>, a base64 string of at least 32 bytes, and stops at startup without a valid one. Create the key with <code>openssl rand -base64 32</code>, and set it in the server's environment, not in git.</p>
+  <p>The panel's cookies get the <code>Secure</code> flag when the request was made over HTTPS, directly or through a trusted proxy. The build mode does not change this. Sign-in also works over plain HTTP, but its cookies then lack the flag, so serve production over HTTPS.</p>
 
   <h2>Trusted proxies</h2>
   <p>If the app runs behind a reverse proxy, set <code>IGNITE_TRUSTED_PROXIES</code> to the proxy's address. It takes comma-separated IP addresses or CIDR ranges. Without it, the login throttle counts the proxy's address, so every client behind the proxy shares one count per email. Forwarded headers (<code>X-Forwarded-For</code> for the client address, <code>X-Forwarded-Proto</code> for Secure cookies) are read only from a trusted proxy, so list only the proxies you run. See <a href="/docs/panel#login-throttle">Panel</a> for how the throttle counts.</p>
@@ -30,8 +30,8 @@
 ip_header = false</code></pre>
 
   <h2>Development and production builds</h2>
-  <p>A debug build, from <code>cargo run</code>, is for development. It reads the views from disk on each request, so an edit shows on refresh. It shows detailed error pages, and it does not mark cookies Secure, so plain HTTP works. A release build, from <code>cargo build --release</code>, is for production. It compiles the views into the binary, shows a plain error page, and marks cookies Secure.</p>
-  <p>Run production in release mode. A debug build on a public server exposes its error details to visitors and reads views from disk for every request. Sign-in also needs HTTPS in a release build, because its cookies are Secure.</p>
+  <p>A debug build, from <code>cargo run</code>, is for development. It reads the views from disk on each request, so an edit shows on refresh, and it shows detailed error pages. A release build, from <code>cargo build --release</code>, is for production. It compiles the views into the binary and shows a plain error page. Both builds mark the cookies Secure on an HTTPS request and leave the flag off on plain HTTP.</p>
+  <p>Run production in release mode. A debug build on a public server exposes its error details to visitors and reads views from disk for every request. Serve production over HTTPS, so the panel's cookies get the <code>Secure</code> flag.</p>
 
   <h2>Deploying with GitHub Actions</h2>
   <p>The recommended way to deploy is to build in CI and serve on the server. GitHub Actions compiles the release binary and the assets on an Ubuntu 24.04 runner, uploads them to the server with a key that can only write release files, and then switches the live release with a second key. The server never compiles anything, so a deploy does not use its memory or processor. A failed health check switches the previous release back in.</p>
