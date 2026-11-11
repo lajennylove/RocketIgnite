@@ -8,7 +8,7 @@ publish = false
 rocket = "0.5.2"
 propel_rocket = "0.2.0"
 propel_runtime = "0.2.0"
-propel_macros = { git = "https://github.com/lajennylove/Propel", tag = "v0.2.0" }
+propel_macros = "0.2.0"
 serde = { version = "1", features = ["derive"] }
 
 [build-dependencies]

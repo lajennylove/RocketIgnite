@@ -804,41 +804,24 @@ dependencies = [
 
 [[package]]
 name = "propel_compiler"
-version = "0.1.0"
-source = "git+https://github.com/lajennylove/Propel?tag=v0.2.0#09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7"
-dependencies = [
- "propel_parser 0.1.0",
- "propel_runtime 0.1.0",
-]
-
-[[package]]
-name = "propel_compiler"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac8bfd6a0880741db4664ff927c5651ee37b31c7801017216b0ea39a720f8be2"
 dependencies = [
- "propel_parser 0.2.0",
- "propel_runtime 0.2.0",
+ "propel_parser",
+ "propel_runtime",
 ]
 
 [[package]]
 name = "propel_macros"
-version = "0.1.0"
-source = "git+https://github.com/lajennylove/Propel?tag=v0.2.0#09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27c14f25839e28d0d92ccfc56a2f5d672792003086247b2e5dac095375221b6c"
 dependencies = [
  "proc-macro2",
- "propel_compiler 0.1.0",
+ "propel_compiler",
  "quote",
  "syn 2.0.119",
-]
-
-[[package]]
-name = "propel_parser"
-version = "0.1.0"
-source = "git+https://github.com/lajennylove/Propel?tag=v0.2.0#09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7"
-dependencies = [
- "pest",
- "pest_derive",
 ]
 
 [[package]]
@@ -857,19 +840,9 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5c79e327358ef2eedf67f4ac1581a08e8e4e092faf1fd837c9ecb9b4b1202a1"
 dependencies = [
- "propel_runtime 0.2.0",
+ "propel_runtime",
  "rocket",
  "serde",
-]
-
-[[package]]
-name = "propel_runtime"
-version = "0.1.0"
-source = "git+https://github.com/lajennylove/Propel?tag=v0.2.0#09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7"
-dependencies = [
- "propel_parser 0.1.0",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -878,7 +851,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98f6762153a9f2e1e765430adb7cd62807fc30c4fb6a11d197b9f37bc90a097a"
 dependencies = [
- "propel_parser 0.2.0",
+ "propel_parser",
  "serde",
  "serde_json",
 ]
@@ -1002,10 +975,10 @@ dependencies = [
 name = "rocket-ignite"
 version = "0.0.0"
 dependencies = [
- "propel_compiler 0.2.0",
+ "propel_compiler",
  "propel_macros",
  "propel_rocket",
- "propel_runtime 0.2.0",
+ "propel_runtime",
  "rocket",
  "serde",
 ]
