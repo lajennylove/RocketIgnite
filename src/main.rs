@@ -7,7 +7,7 @@ mod views;
 use nav::DocPage;
 
 use propel_rocket::PropelView;
-use rocket::fs::FileServer;
+use rocket::fs::{FileServer, Options};
 use rocket::http::{ContentType, Status};
 use rocket::response::Redirect;
 
@@ -80,6 +80,10 @@ fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![home, docs, robots, sitemap])
         // Built assets: hashed files and copied images and fonts.
-        .mount("/build", FileServer::new("public/build"))
+        .mount(
+            "/build",
+            // Same as the 0.6-dev `FileServer::new`: index files and trailing slashes for directories.
+            FileServer::new("public/build", Options::Index | Options::NormalizeDirs),
+        )
         .register("/", catchers![not_found])
 }
