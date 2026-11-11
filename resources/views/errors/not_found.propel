@@ -2,7 +2,7 @@
 
 @section('title')Not found@endsection
 
-@section('description')There is no Ignite docs page at this address. Start again from the introduction to Ignite, the admin panel for Rocket.rs, built on Propel and Diesel.@endsection
+@section('description')There is no Ignite docs page at this address. Start again from the introduction to Ignite, the admin panel for Rocket.rs, built on Propel and Orbit.@endsection
 @section('robots')noindex,follow@endsection
 @section('og_type')website@endsection
 @section('structured_data')@endsection

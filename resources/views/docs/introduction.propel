@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('title')Introduction@endsection
-@section('description')Ignite is an admin panel for Rocket.rs, built on Propel views and Diesel, for MariaDB or MySQL tables. Filters and bulk actions are not built yet.@endsection
+@section('description')Ignite is an admin panel for Rocket.rs, built on Propel views and Orbit, for MariaDB or MySQL tables. Filters and bulk actions are not built yet.@endsection
 
 @section('og_type')website@endsection
 @section('structured_data')
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Ignite","url":"https://ignite.rocketboost.rs/","description":"Ignite is an admin panel for Rocket.rs, built on Propel views and Diesel, for MariaDB or MySQL tables. Filters and bulk actions are not built yet.","codeRepository":"https://github.com/lajennylove/Ignite","sameAs":"https://github.com/lajennylove/Ignite"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Ignite","url":"https://ignite.rocketboost.rs/","description":"Ignite is an admin panel for Rocket.rs, built on Propel views and Orbit, for MariaDB or MySQL tables. Filters and bulk actions are not built yet.","codeRepository":"https://github.com/lajennylove/Ignite","sameAs":"https://github.com/lajennylove/Ignite"}</script>
 @endsection
 
 @section('content')
@@ -18,7 +18,7 @@
   <ul>
     <li><strong>A panel inside your app.</strong> It mounts in a Rocket app, under <code>/admin</code> by default.</li>
     <li><strong>Modelled on Filament 5.x.</strong> It has a panel, resources, forms, tables, actions, notifications, widgets and a login. The pages here follow the Filament docs' order, so that reference is useful for the ideas.</li>
-    <li><strong>Written in Rust.</strong> A resource is a Rust type that implements a trait, or one that <code>#[derive(IgniteResource)]</code> writes from a Diesel model. The resource names the table's fields and columns, and how to list, create, update and delete its rows. Ignite draws the screens from that.</li>
+    <li><strong>Written in Rust.</strong> A resource is a Rust type that implements a trait, or one that <code>#[derive(IgniteResource)]</code> writes from an Orbit model. The resource names the table's fields and columns, and how to list, create, update and delete its rows. Ignite draws the screens from that.</li>
   </ul>
 
   <h2>What Ignite is not</h2>
@@ -34,6 +34,6 @@
   <h2>How it relates to Propel</h2>
   <p><a target="_new" rel="noopener" href="https://github.com/lajennylove/Propel">Propel</a> renders Ignite's screens. The panel's views live in the <code>ignite</code> namespace, so an app can extend them with <code>@@extends('ignite::layouts.app')</code>. Debug builds render views at runtime. Release builds render compiled views.</p>
 
-  <h2>How it relates to Diesel</h2>
-  <p>Ignite queries the database with Diesel 2.x and the MySQL backend. When the app starts, the panel opens a pool of connections. Each request borrows a connection from the pool. A resource's queries are Diesel queries, whether the derive writes them or you do.</p>
+  <h2>How it relates to Orbit</h2>
+  <p><a target="_new" rel="noopener" href="https://github.com/lajennylove/Orbit">Orbit</a> is the ORM that queries the database. A resource's queries are Orbit queries, whether the derive writes them or you do. When the app's Rocket build ignites, the panel opens an Orbit connection pool of 10 connections to <code>DATABASE_URL</code>. The panel's routes are async and share that pool. A connection that fails stops the launch with an error.</p>
 @endsection

@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('title')Resources@endsection
-@section('description')A resource connects a MariaDB or MySQL table to the panel. You write it by hand, or #[derive(IgniteResource)] writes it from a Diesel model.@endsection
+@section('description')A resource connects a MariaDB or MySQL table to the panel. You write it by hand, or #[derive(IgniteResource)] writes it from an Orbit model.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>A resource connects a database table to the panel. The panel lists, creates, edits and deletes its rows. A resource is a Rust type that implements the <code>IgniteResource</code> trait. You can write the impl by hand, or let <code>#[derive(IgniteResource)]</code> write it from a Diesel model.</p>
+  <p>A resource connects a database table to the panel. The panel lists, creates, edits and deletes its rows. A resource is a Rust type that implements the <code>IgniteResource</code> trait. You can write the impl by hand, or let <code>#[derive(IgniteResource)]</code> write it from an Orbit model.</p>
 
   <h2>Address and name</h2>
   <p>Four constants name the resource:</p>
@@ -18,32 +18,38 @@
   <p>The derive takes the slug from the table name, and the title from the table name with a capital letter, unless you set <code>title</code>. The singular name is the title without a trailing <code>s</code>, unless you set <code>singular</code>.</p>
 
   <h2>Derive a resource</h2>
-  <p>The derive reads a Diesel model. The model also derives <code>Queryable</code>, <code>Selectable</code> and <code>Serialize</code>, because the derive does not write them. This model has a <code>title</code> that is searchable and sortable, and a <code>body</code> that is a multi-line field and hidden from the list:</p>
+  <p>The derive reads an Orbit model. The model also derives <code>OrbitModel</code> and <code>Serialize</code>, because the derive does not write them. The derive writes the form, the list, the queries and the input struct. This model has a <code>title</code> that is searchable and sortable, and a <code>body</code> that is a multi-line field and hidden from the list:</p>
   <pre class="line-numbers"><code class="language-rust">use ignite_core::IgniteResource;
+use orbit_orm::OrbitModel;
 use serde::Serialize;
 
-use crate::schema;
-
-#[derive(diesel::Queryable, diesel::Selectable, Serialize, IgniteResource)]
-#[diesel(table_name = schema::articles)]
+#[derive(OrbitModel, Serialize, IgniteResource)]
+#[orbit(table = "articles")]
 #[ignite(
-    table = schema::articles,
+    table = articles,
     title = "Articles",
     latest_records(limit = 5, columns = "title,published_on"),
 )]
 pub struct Article {
     pub id: i64,
+    #[orbit(fillable)]
     #[ignite(searchable, sortable)]
     pub title: String,
+    #[orbit(fillable)]
     #[ignite(form_type = "textarea", hidden_on_index)]
     pub body: String,
+    #[orbit(fillable)]
     pub published: bool,
+    #[orbit(fillable)]
     #[ignite(label = "Published on")]
     pub published_on: Option&lt;chrono::NaiveDate&gt;,
 }</code></pre>
+  <p>The model's own attributes belong to Orbit. <code>#[orbit(table = "...")]</code> names the table, and when it is left out, Orbit derives the table name from the struct. <code>#[orbit(primary_key = "...")]</code> names the key column when it is not <code>id</code>. On a field, <code>#[orbit(column = "...")]</code> names a column that differs from the field name, <code>#[orbit(skip)]</code> keeps a field out of the table, so it gets its default value when a row is read, and <code>#[orbit(fillable)]</code> allows the column to be written.</p>
+  <p>Every field of the form is written on a create and on an update, so mark each one <code>#[orbit(fillable)]</code>. Orbit refuses to write a column that is not fillable, and the save fails with its <code>NotFillable</code> error. The primary key is not in the form, so it needs no mark.</p>
+
   <p>The struct attributes are:</p>
   <ul>
-    <li><code>table</code>, the Diesel table module. Required.</li>
+    <li><code>table</code>, the table of the model. Required. It must be the table of the Orbit model: the name in <code>#[orbit(table = ...)]</code>, or the name Orbit derives from the struct when that is left out. A different name is a compile error.</li>
     <li><code>title</code>, the heading of the list. Defaults to the table name, capitalized.</li>
     <li><code>singular</code>, the name of one record, for the headings. Defaults to the title without a trailing <code>s</code>.</li>
   </ul>
@@ -51,48 +57,59 @@ pub struct Article {
   <ul>
     <li><code>primary_key</code>, for a key that is not named <code>id</code>. The key must be an <code>i32</code> or an <code>i64</code>. It is left out of the form.</li>
     <li><code>label</code>, the label on the form and the column heading. Defaults to the field name, capitalized, with underscores as spaces.</li>
-    <li><code>form_type</code>, one of <code>text</code>, <code>textarea</code>, <code>password</code>, <code>number</code>, <code>checkbox</code> or <code>date</code>. Defaults from the type: text for <code>String</code>, number for <code>i32</code> and <code>i64</code>, checkbox for <code>bool</code>, and date for <code>chrono::NaiveDate</code>. A <code>password</code> must be a <code>String</code>. See <a href="#passwords">Passwords</a>.</li>
+    <li><code>form_type</code>, one of <code>text</code>, <code>textarea</code>, <code>password</code>, <code>number</code>, <code>checkbox</code> or <code>date</code>. Defaults from the type: text for <code>String</code>, number for the integers, a decimal number for <code>f32</code> and <code>f64</code>, checkbox for <code>bool</code>, and date for <code>chrono::NaiveDate</code>. A date and time, <code>chrono::NaiveDateTime</code>, has its own input and needs no <code>form_type</code>. A <code>password</code> must be a <code>String</code>. See <a href="#passwords">Passwords</a>.</li>
+    <li><code>options</code>, a select. A <code>String</code> field with a list of <code>("value", "Label")</code> pairs gives a fixed select. A <code>String</code> or integer field with a function, such as <code>options = load_categories</code>, loads its choices each time the form is shown. See the selects below.</li>
+    <li><code>belongs_to</code> and <code>display</code>, a relation, which go together. <code>belongs_to = Category</code> names the related model, an <code>OrbitModel</code>, and <code>display</code> names the column of that model to show. See the selects below.</li>
+    <li><code>step</code>, the browser's step for an <code>f32</code> or <code>f64</code> input, such as <code>step = "0.01"</code>. The default is <code>"any"</code>.</li>
     <li><code>required</code>, or <code>required = false</code>. A field that is not an <code>Option</code> is required by default, and a <code>bool</code> is never blank.</li>
     <li><code>searchable</code> and <code>sortable</code>, for the search box and the column headings. See <a href="/docs/tables">Tables</a>.</li>
     <li><code>hidden_on_index</code>, which leaves the column out of the list. The list shows every other field, including the <code>id</code>, unless you hide it.</li>
   </ul>
+  <p>The supported field types are <code>String</code>, <code>i16</code>, <code>i32</code>, <code>i64</code>, <code>f32</code>, <code>f64</code>, <code>bool</code>, <code>chrono::NaiveDate</code> and <code>chrono::NaiveDateTime</code>, and an <code>Option</code> of any of them. The primary key must be an <code>i32</code> or an <code>i64</code>. The derive refuses another type at compile time.</p>
+  <p>The selects are written on the field, and the form shows them as a list:</p>
+  <pre class="line-numbers"><code class="language-rust">#[ignite(options = [("draft", "Draft"), ("published", "Published")])]
+pub status: String,
+
+#[ignite(options = load_categories)]
+pub tag: Option&lt;String&gt;,
+
+#[ignite(belongs_to = Category, display = name)]
+pub category_id: Option&lt;i32&gt;,</code></pre>
+  <p><code>load_categories</code> is an async function, <code>async fn load_categories(db: &amp;Database) -> Result&lt;Vec&lt;(String, String)&gt;, orbit_orm::Error&gt;</code>, and the panel calls it each time it shows the form. A <code>belongs_to</code> field stores the related row's key, so it is an <code>i32</code> or an <code>i64</code>. Its select lists the rows of the related model by their <code>display</code> column, and the list shows that name. A submitted value must be one of the choices, so a value with no row is refused. The derive does not write a foreign key: add one in the migration if the database should enforce it.</p>
   <p>The struct also takes <code>latest_records(...)</code>, which declares the dashboard table of the newest records. The <code>columns</code> are a comma-separated list of model fields to show, and are required. A password field is refused. <code>limit</code> is the most rows to show, and defaults to 5. <code>title</code> is the table's heading, and defaults to "Latest" and the resource title, so "Latest Articles". The derive writes <code>latest_records</code> from it, and <code>latest</code>, which orders by the primary key, newest first. See <a href="/docs/widgets">Widgets</a>.</p>
-  <p>The supported field types are <code>String</code>, <code>i32</code>, <code>i64</code>, <code>bool</code> and <code>chrono::NaiveDate</code>, and an <code>Option</code> of any of them. The derive also writes an input struct named after the model with <code>Input</code> added, here <code>ArticleInput</code>, which holds the validated form values.</p>
-  <p>The derive writes the whole trait impl, so a derived resource has two limits. It cannot write dashboard cards, which need a hand-written <code>widgets</code> method. And it has no <code>select</code> field kind. See <a href="/docs/widgets">Widgets</a> and <a href="/docs/forms">Forms</a>.</p>
+  <p>The derive also writes an input struct named after the model with <code>Input</code> added, here <code>ArticleInput</code>, which holds the validated form values.</p>
+  <p>The derive writes the trait impl, so it cannot write dashboard cards, which need a hand-written <code>widgets</code> method. See <a href="/docs/widgets">Widgets</a> and <a href="/docs/forms">Forms</a>.</p>
 
   <h2 id="passwords">Passwords</h2>
   <p>A field with <code>form_type = "password"</code> is hashed on save. This model keeps the login of an author:</p>
   <pre class="line-numbers"><code class="language-rust">use ignite_core::IgniteResource;
+use orbit_orm::OrbitModel;
 use serde::Serialize;
-
-use crate::schema;
 
 /// The password is hashed on save. It is required on create, and a blank
 /// value on edit keeps the stored hash.
-#[derive(diesel::Queryable, diesel::Selectable, Serialize, IgniteResource)]
-#[diesel(table_name = schema::authors)]
-#[ignite(table = schema::authors, title = "Authors", singular = "Author")]
+#[derive(OrbitModel, Serialize, IgniteResource)]
+#[orbit(table = "authors")]
+#[ignite(table = authors, title = "Authors", singular = "Author")]
 pub struct Author {
     pub id: i64,
+    #[orbit(fillable)]
     #[ignite(searchable, sortable)]
     pub name: String,
+    #[orbit(fillable)]
     #[ignite(form_type = "password")]
     pub password: String,
 }</code></pre>
   <p>The derive stores the argon2 hash from <code>ignite_core::hash_password</code>, the same function the panel's sign-in uses. The password is required on create. On edit, a blank password is optional, and it keeps the stored hash. Password fields are not list columns, and the edit form never shows the stored value. The derive refuses a password field that is not a <code>String</code> or an <code>Option</code> of one, at compile time.</p>
 
   <h2>Write a resource by hand</h2>
-  <p>A hand-written resource implements the trait itself. This one manages a <code>tags</code> table with a choice field, a search and a sort, a dashboard card and a dashboard table of its newest tags:</p>
-  <pre class="line-numbers"><code class="language-rust">use diesel::prelude::*;
-use diesel::result::QueryResult;
-use diesel::sql_types::BigInt;
-use ignite_core::{
-    escape_like, Column, Direction, Field, FieldErrors, FieldKind, FormInput, IgniteResource,
-    LatestRecords, ListQuery, Page, StatWidget,
+  <p>A hand-written resource implements the trait itself. The trait's query methods are async, and they take the app's Orbit <code>Database</code>. This one manages a <code>tags</code> table with a choice field, a search and a sort, a dashboard card and a dashboard table of its newest tags:</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_core::{
+    escape_like, Column, Field, FieldErrors, FieldKind, FormInput, IgniteResource, LatestRecords,
+    ListQuery, Page, StatWidget,
 };
+use orbit_orm::{Database, Direction, Error, Model, OrbitModel, Operator, Value};
 use serde::Serialize;
-
-use crate::schema::tags;
 
 const KINDS: &amp;[(&amp;str, &amp;str)] = &amp;[("color", "Colour"), ("topic", "Topic")];
 
@@ -110,11 +127,13 @@ const KIND: Field = Field {
     required: true,
 };
 
-#[derive(Queryable, Selectable, Serialize)]
-#[diesel(table_name = tags)]
+#[derive(OrbitModel, Serialize)]
+#[orbit(table = "tags")]
 pub struct TagRecord {
     pub id: i64,
+    #[orbit(fillable)]
     pub name: String,
+    #[orbit(fillable)]
     pub kind: String,
 }
 
@@ -133,8 +152,8 @@ impl IgniteResource for Tag {
     const TITLE: &amp;'static str = "Tags";
     const SINGULAR: &amp;'static str = "Tag";
 
-    fn widgets(conn: &amp;mut MysqlConnection) -&gt; QueryResult&lt;Vec&lt;StatWidget&gt;&gt; {
-        let total: i64 = tags::table.count().get_result(conn)?;
+    async fn widgets(db: &amp;Database) -&gt; Result&lt;Vec&lt;StatWidget&gt;, Error&gt; {
+        let total = TagRecord::query().count(db).await?;
         Ok(vec![StatWidget {
             label: "Tags",
             value: total,
@@ -149,12 +168,12 @@ impl IgniteResource for Tag {
         })
     }
 
-    fn latest(conn: &amp;mut MysqlConnection, limit: i64) -&gt; QueryResult&lt;Vec&lt;TagRecord&gt;&gt; {
-        tags::table
-            .order(tags::id.desc())
-            .limit(limit)
-            .select(TagRecord::as_select())
-            .load(conn)
+    async fn latest(db: &amp;Database, limit: i64) -&gt; Result&lt;Vec&lt;TagRecord&gt;, Error&gt; {
+        TagRecord::query()
+            .order_by("id", Direction::Desc)
+            .limit(limit.max(0) as u64)
+            .get(db)
+            .await
     }
 
     fn fields() -&gt; &amp;'static [Field] {
@@ -178,58 +197,67 @@ impl IgniteResource for Tag {
         ]
     }
 
-    fn list(conn: &amp;mut MysqlConnection, query: &amp;ListQuery) -&gt; QueryResult&lt;Page&lt;TagRecord&gt;&gt; {
+    async fn list(db: &amp;Database, query: &amp;ListQuery) -&gt; Result&lt;Page&lt;TagRecord&gt;, Error&gt; {
         let pattern = query
             .search
             .as_ref()
             .map(|text| format!("%{}%", escape_like(text)));
-        let mut rows = tags::table.into_boxed();
-        let mut count = tags::table.into_boxed();
+        let mut rows = TagRecord::query();
+        let mut count = TagRecord::query();
         if let Some(pattern) = &amp;pattern {
-            rows = rows.filter(tags::name.like(pattern.clone()));
-            count = count.filter(tags::name.like(pattern.clone()));
+            rows = rows.where_op("name", Operator::Like, pattern.clone());
+            count = count.where_op("name", Operator::Like, pattern.clone());
         }
-        rows = match &amp;query.sort {
-            Some((key, Direction::Asc)) if key == "name" =&gt; rows.order(tags::name.asc()),
-            Some((key, Direction::Desc)) if key == "name" =&gt; rows.order(tags::name.desc()),
-            _ =&gt; rows.order(tags::id.asc()),
+        let (column, direction) = match &amp;query.sort {
+            Some((key, ignite_core::Direction::Asc)) if key == "name" =&gt; ("name", Direction::Asc),
+            Some((key, ignite_core::Direction::Desc)) if key == "name" =&gt; ("name", Direction::Desc),
+            _ =&gt; ("id", Direction::Asc),
         };
+        rows = rows.order_by(column, direction);
 
-        let total: i64 = count.count().get_result(conn)?;
+        let total = count.count(db).await?;
         let rows = rows
-            .limit(query.per_page)
-            .offset(query.offset())
-            .select(TagRecord::as_select())
-            .load(conn)?;
+            .limit(query.per_page.max(0) as u64)
+            .offset(query.offset().max(0) as u64)
+            .get(db)
+            .await?;
         Ok(Page { rows, total })
     }
 
-    fn find(conn: &amp;mut MysqlConnection, id: i64) -&gt; QueryResult&lt;Option&lt;TagRecord&gt;&gt; {
-        tags::table
-            .find(id)
-            .select(TagRecord::as_select())
-            .first(conn)
-            .optional()
+    async fn find(db: &amp;Database, id: i64) -&gt; Result&lt;Option&lt;TagRecord&gt;, Error&gt; {
+        TagRecord::query().find(db, id).await
     }
 
-    fn create(conn: &amp;mut MysqlConnection, input: TagInput) -&gt; QueryResult&lt;TagRecord&gt; {
-        diesel::insert_into(tags::table)
-            .values((tags::name.eq(&amp;input.name), tags::kind.eq(&amp;input.kind)))
-            .execute(conn)?;
-        let id: i64 = diesel::select(diesel::dsl::sql::&lt;BigInt&gt;("LAST_INSERT_ID()"))
-            .get_result(conn)?;
-        Self::find(conn, id)?.ok_or(diesel::result::Error::NotFound)
+    async fn create(db: &amp;Database, input: TagInput) -&gt; Result&lt;TagRecord, Error&gt; {
+        let values = [
+            ("name", Value::from(input.name.as_str())),
+            ("kind", Value::from(input.kind.as_str())),
+        ];
+        let id = TagRecord::query().insert(db, &amp;values).await?;
+        Self::find(db, id as i64)
+            .await?
+            .ok_or(Error::NotFound { table: TagRecord::TABLE })
     }
 
-    fn update(conn: &amp;mut MysqlConnection, id: i64, input: TagInput) -&gt; QueryResult&lt;TagRecord&gt; {
-        diesel::update(tags::table.find(id))
-            .set((tags::name.eq(&amp;input.name), tags::kind.eq(&amp;input.kind)))
-            .execute(conn)?;
-        Self::find(conn, id)?.ok_or(diesel::result::Error::NotFound)
+    async fn update(db: &amp;Database, id: i64, input: TagInput) -&gt; Result&lt;TagRecord, Error&gt; {
+        let values = [
+            ("name", Value::from(input.name.as_str())),
+            ("kind", Value::from(input.kind.as_str())),
+        ];
+        let changed = TagRecord::query()
+            .where_eq("id", id)
+            .update(db, &amp;values)
+            .await?;
+        if changed == 0 {
+            return Err(Error::NotFound { table: TagRecord::TABLE });
+        }
+        Self::find(db, id)
+            .await?
+            .ok_or(Error::NotFound { table: TagRecord::TABLE })
     }
 
-    fn delete(conn: &amp;mut MysqlConnection, id: i64) -&gt; QueryResult&lt;usize&gt; {
-        diesel::delete(tags::table.find(id)).execute(conn)
+    async fn delete(db: &amp;Database, id: i64) -&gt; Result&lt;u64, Error&gt; {
+        TagRecord::query().where_eq("id", id).delete(db).await
     }
 
     fn validate(form: &amp;FormInput) -&gt; Result&lt;TagInput, FieldErrors&gt; {
@@ -239,6 +267,9 @@ impl IgniteResource for Tag {
         let (Some(name), Some(kind)) = (name, kind) else {
             return Err(errors);
         };
+        if !KIND.check_choice(kind, KINDS, &amp;mut errors) {
+            return Err(errors);
+        }
         Ok(TagInput {
             name: name.to_string(),
             kind: kind.to_string(),
@@ -250,9 +281,10 @@ impl IgniteResource for Tag {
     <li><code>fields</code> and <code>columns</code>, the form fields and the list columns, in display order. A column's key matches a field name.</li>
     <li><code>list</code>, which returns one page of rows for a <code>ListQuery</code>, with the total count. It must apply the search and the sort the query asks for, and it should sort by the primary key when no sort is given.</li>
     <li><code>find</code>, <code>create</code>, <code>update</code> and <code>delete</code>, which work on one row. <code>create</code> and <code>update</code> take the validated <code>Input</code> and return the row as the <code>Record</code>.</li>
-    <li><code>validate</code>, which turns the submitted form into the <code>Input</code>, or returns an error message for each field. Call <code>check_required</code> for each required field.</li>
+    <li><code>validate</code>, which turns the submitted form into the <code>Input</code>, or returns an error message for each field. Call <code>check_required</code> for each required field, and <code>check_choice</code> for a select.</li>
     <li><code>validate_update</code>, which does the same for an edit. It defaults to <code>validate</code>. Override it when a field may be blank on edit.</li>
     <li><code>widgets</code>, the dashboard cards, and <code>latest_records</code> with <code>latest</code>, the dashboard table of the newest records. See <a href="/docs/widgets">Widgets</a>.</li>
+    <li><code>options</code>, the choices of a <code>Lookup</code> field by its name, which the panel calls when it shows the form and when it checks a submitted value. The default has no choices. A derived resource writes it for <code>options = ...</code> and <code>belongs_to = ...</code>, and a hand-written resource with such a field implements it.</li>
   </ul>
   <p>A hand-written resource with a password must hash it with <code>ignite_core::hash_password</code> itself, and override <code>validate_update</code> so that a blank password keeps the stored hash on edit.</p>
   <p>The <code>Record</code> is what the database returns. It must serialize to JSON with an <code>id</code> key holding the primary key as a number, and with keys named after the fields and columns. The panel builds the row links from <code>id</code>.</p>

@@ -2,7 +2,7 @@
 
 The documentation site for [Ignite](https://github.com/lajennylove/Ignite), an admin panel for Rocket.rs. Built on Rocket and [Propel](https://github.com/lajennylove/Propel) views, with Tailwind and Vite for the assets.
 
-The documentation for [Ignite](https://github.com/lajennylove/Ignite) 0.2.0: the panel, resources, forms, tables, actions, notifications, widgets and views. Each page says what is not built yet, such as filters and bulk actions.
+The documentation for [Ignite](https://github.com/lajennylove/Ignite): the panel, resources, forms, tables, actions, notifications, widgets and views. The pages describe Ignite on its main branch, where the database layer is [Orbit](https://github.com/lajennylove/Orbit) and Diesel is gone. Each page says what is not built yet, such as filters and bulk actions.
 
 ## Dependencies
 
@@ -11,7 +11,7 @@ The site is a Rocket app with Propel views. It does not depend on the Ignite cra
 - Rocket: git revision `3a54d079`
 - Propel: git revision `09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7` (`propel_rocket`, `propel_runtime`, `propel_macros`, and `propel_compiler` as a build dependency)
 
-The install page for apps pins the Propel and Ignite tag `v0.2.0`. This site's pins are in `Cargo.toml`.
+The install page for apps pins Ignite and Orbit to git revisions, and Rocket and Propel to their crates.io releases, the same ones Ignite resolves. This site's own pins are in `Cargo.toml`.
 
 ## Developing this site
 

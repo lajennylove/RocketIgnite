@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title')Deploying@endsection
-@section('description')How to deploy an Ignite app: the migrate step, the release build and its secret key, trusted proxies, backups, and the health check the panel does not have yet.@endsection
+@section('description')How to deploy an Ignite app: the migrate step and its rollback, the release build and its secret key, trusted proxies, backups, and the health check.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>
@@ -10,7 +10,11 @@
   <h2>Migrations</h2>
   <p>Run the panel's migrations before the first start, and on every deploy after that. In an app, the command is:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- migrate</code></pre>
-  <p>Running it again does nothing when the migrations are already applied. See <a href="/docs/install">Installation</a> for the <code>ignite</code> binary.</p>
+  <p>Running it again does nothing when the migrations are already applied. It prints each migration it applies, or <code>Nothing to migrate.</code>, and exits with status 1 on failure. See <a href="/docs/install">Installation</a> for the <code>ignite</code> binary.</p>
+
+  <h2 id="rollback">Rollback</h2>
+  <p><code>ignite migrate:rollback</code> reverts the last batch. A batch is the set of migrations that one <code>ignite migrate</code> applied, so one run reverts all of them, last first, each with its <code>down.sql</code>. After a migrate that applied one migration, a rollback reverts that one. The run says which migrations it reverted, and changes nothing else. To revert the batch before it, run the command again.</p>
+  <p>The rows that Diesel wrote before the move to Orbit are batch 0. They are not run again. A rollback that reaches batch 0 reverts every migration of the panel, which drops the panel's tables and their rows. Back up the database before you roll back that far.</p>
 
   <h2>Release build</h2>
   <p>Build with <code>cargo build --release</code>. A release build renders compiled views, so the deployed app needs no view files.</p>
@@ -234,9 +238,10 @@ WantedBy=multi-user.target</code></pre>
 
   <h2>Backups</h2>
   <p>Back up the database with <code>mysqldump --single-transaction</code>. The option takes a consistent snapshot of InnoDB tables without locking them. Include the panel's tables and the app's own tables:</p>
-  <pre class="line-numbers"><code class="language-bash">mysqldump --single-transaction your_database users sessions login_throttles user_avatars your_app_table</code></pre>
+  <pre class="line-numbers"><code class="language-bash">mysqldump --single-transaction your_database users sessions login_throttles user_avatars __diesel_schema_migrations your_app_table</code></pre>
+  <p>The migrations table is part of the panel's state. A restored database needs it to know which migrations have run, so include it.</p>
   <p>A backup holds password hashes and session rows, so store it as you would store the database itself. A restored database brings back its sessions. A sign-in that was ended after the backup was taken is valid again until that session expires.</p>
 
   <h2>Health check</h2>
-  <p>The app serves <code>GET /up</code> at its root, as Laravel does. It returns status 200 with the body <code>OK</code>, and needs no sign-in. Point the health check at it.</p>
+  <p>The app serves <code>GET /up</code> at its root, as Laravel does. It returns status 200 with a minimal HTML page, titled <code>Application up</code>, and needs no sign-in. Point the health check at it.</p>
 @endsection

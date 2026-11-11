@@ -9,7 +9,7 @@
 
   <h2>Stat cards</h2>
   <p>A card is a <code>StatWidget</code>: a label, such as <code>Tags</code>, and a whole-number value. The dashboard shows the cards of every resource, in the order the resources are passed to the panel builder, and each resource's cards in the order its <code>widgets</code> method returns them.</p>
-  <p>The <code>widgets</code> method has this signature: <code>fn widgets(conn: &amp;mut MysqlConnection) -> QueryResult&lt;Vec&lt;StatWidget&gt;&gt;</code>. It runs on a connection from the pool, so it can use any Diesel query. The default returns no cards.</p>
+  <p>The <code>widgets</code> method has this signature: <code>async fn widgets(db: &amp;Database) -> Result&lt;Vec&lt;StatWidget&gt;, orbit_orm::Error&gt;</code>. It takes the app's Orbit <code>Database</code>, and it is async, so it can use any Orbit query and <code>.await</code> it. The default returns no cards.</p>
   <p>When no resource has cards, the dashboard says <code>No stats yet.</code> and tells the developer to implement <code>widgets</code>.</p>
 
   <h2>Latest records</h2>

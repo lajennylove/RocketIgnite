@@ -15,11 +15,14 @@
     <li><code>Password</code>, a password input. The form never fills it in, not even on edit.</li>
     <li><code>Number</code>, a number input. The value is read as text, and the resource parses it.</li>
     <li><code>Checkbox</code>, a tick box. A tick sends <code>on</code>, and an empty box sends nothing, so the value is false.</li>
+    <li><code>Decimal</code>, a decimal number input, with the browser's step. The value is read as a number, such as <code>9.5</code>.</li>
     <li><code>Select</code>, a list of <code>(value, label)</code> choices.</li>
+    <li><code>Lookup</code>, a select whose choices come from the database each time the form is shown. A derived resource fills it with <code>options = ...</code> or <code>belongs_to = ...</code>.</li>
     <li><code>Date</code>, a date input. The value is read as <code>YYYY-MM-DD</code>.</li>
+    <li><code>DateTime</code>, a date and time input. The value is read as <code>YYYY-MM-DDTHH:MM</code>, with seconds when given.</li>
   </ul>
-  <p>A hand-written resource can use every kind. The derive can use all of them except <code>Select</code>. A derived password field is a <code>String</code>, and it is hashed on save. See <a href="/docs/resources#passwords">Resources</a>.</p>
-  <p>The panel does not check a <code>Select</code> value against its choices. The resource's <code>validate</code> must do that.</p>
+  <p>A hand-written resource can use every kind. The derive writes the kinds from the field's type and attributes, as <a href="/docs/resources">Resources</a> shows. A derived password field is a <code>String</code>, and it is hashed on save. See <a href="/docs/resources#passwords">Resources</a>.</p>
+  <p>A select starts with a <code>Select an option</code> placeholder, so a form that is submitted without a choice does not send the first one by accident. The derive checks a submitted <code>Select</code> value against its listed choices. The panel checks a submitted <code>Lookup</code> value against the resource's <code>options</code> method, and refuses one that is not listed with <code>Choose one of the options.</code>. A hand-written <code>Select</code> is checked by its <code>validate</code>, which must do that itself.</p>
 
   <h2>Required fields</h2>
   <p>A field marked <code>required</code> shows an asterisk after its label. The asterisk is only a hint: the resource's <code>validate</code> must reject a blank value. The derive does this for you, and a hand-written resource calls <code>check_required</code>, which trims the value and records the message <code>&lt;label&gt; is required.</code> if it is blank.</p>

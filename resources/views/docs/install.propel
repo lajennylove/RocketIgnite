@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title')Installation@endsection
-@section('description')How to add Ignite 0.2.0 to a Rocket app: the pinned Rocket, Propel and Diesel versions, DATABASE_URL and .env, the migrations, the first user and the secret key.@endsection
+@section('description')How to add Ignite to a Rocket app: the pinned Rocket, Propel and Orbit versions, DATABASE_URL and .env, the migrations, the first user and the secret key.@endsection
 
 @section('content')
   <h1>{{ $title }}</h1>
@@ -14,42 +14,42 @@
   </ul>
 
   <h2>Pinned versions</h2>
-  <p>This page documents Ignite 0.2.0. Use the same pins as Ignite, so the app builds one copy of each crate:</p>
+  <p>This page documents the Orbit port of Ignite, at revision <code>139d342</code> of its main branch. The port has no release tag yet, so the pins are revisions. Use the same pins as Ignite, so the app builds one copy of each crate:</p>
   <ul>
-    <li>Rocket, from git, at revision <code>3a54d079</code>.</li>
-    <li>Propel, from git, at revision <code>09c8a02</code> (the commit of Propel's <code>v0.2.0</code> tag). Pin the revision, not the tag: Cargo would build Propel twice and the panel's views would not be found: <code>propel_rocket</code>, <code>propel_macros</code> and <code>propel_runtime</code>, and <code>propel_compiler</code> as a build dependency. Propel renders the panel's views. Use the same tag for every Propel crate, so Cargo builds one copy of each.</li>
-    <li>Ignite, from git, at tag <code>v0.2.0</code>: <code>ignite-core</code> and <code>ignite-panel</code>.</li>
-    <li>Diesel, from a fork, at commit <code>a07c4b2c20a466ef34f50ca283790f4df20b0699</code>. Ignite needs the fork for a read fix on MariaDB 13 with libmariadb 3.4, where some text queries returned an empty first row. The fix is not yet in upstream Diesel, so apps use the fork until it is.</li>
+    <li>Orbit (<code>orbit-orm</code>), from git, at revision <code>e3b8668</code>. Orbit is the database layer, and the models derive its <code>OrbitModel</code>.</li>
+    <li>Ignite, from git, at revision <code>139d342</code>: <code>ignite-core</code> and <code>ignite-panel</code>.</li>
+    <li>Rocket and Propel, from crates.io: <code>rocket</code> 0.5.2, <code>propel_rocket</code> and <code>propel_runtime</code> 0.2.0, and <code>propel_compiler</code> 0.2.0 as a build dependency. Ignite resolves these from crates.io, so the app must use the same releases. A git pin of either would build a second copy, and the panel's views would not match the app's.</li>
   </ul>
+  <p>Diesel is no longer used. Ignite does not need a MariaDB client library to build.</p>
 
   <h2>Add the crates</h2>
   <p>Add Ignite to <code>Cargo.toml</code>, with the pins above:</p>
-  <pre class="line-numbers"><code class="language-toml"># Ignite 0.2.0, from its git tags.
+  <pre class="line-numbers"><code class="language-toml"># Ignite and Orbit, from git at the revisions above. Rocket and Propel from crates.io.
 [dependencies]
-ignite-panel = { git = "https://github.com/lajennylove/Ignite", tag = "v0.2.0" }
-ignite-core = { git = "https://github.com/lajennylove/Ignite", tag = "v0.2.0" }
-rocket = { git = "https://github.com/rwf2/Rocket", rev = "3a54d079" }
-propel_rocket = { git = "https://github.com/lajennylove/Propel", rev = "09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7" }
-propel_macros = { git = "https://github.com/lajennylove/Propel", rev = "09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7" }
-propel_runtime = { git = "https://github.com/lajennylove/Propel", rev = "09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7" }
-diesel = { git = "https://github.com/lajennylove/diesel", rev = "a07c4b2c20a466ef34f50ca283790f4df20b0699", features = ["mysql", "r2d2", "chrono"] }
+ignite-panel = { git = "https://github.com/lajennylove/Ignite", rev = "139d342b27d7142b5cf37a6c6848bc5eca1b741f" }
+ignite-core = { git = "https://github.com/lajennylove/Ignite", rev = "139d342b27d7142b5cf37a6c6848bc5eca1b741f" }
+orbit-orm = { git = "https://github.com/lajennylove/Orbit", rev = "e3b8668270cc8c3f2c17b69b9257c442707be1a4" }
+rocket = "0.5.2"
+propel_rocket = "0.2.0"
+propel_runtime = "0.2.0"
 serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
 
 [build-dependencies]
-propel_compiler = { git = "https://github.com/lajennylove/Propel", rev = "09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7" }</code></pre>
-  <p>The derive writes paths that start with <code>ignite_core</code>, so the app needs that crate too. A date field needs <code>chrono</code> with its <code>serde</code> feature. The app's CLI binary uses <code>dotenvy</code> to read <code>.env</code>.</p>
-  <p>Apps pin the same Diesel fork and commit, so no <code>[patch]</code> line is needed.</p>
+propel_compiler = "0.2.0"</code></pre>
+  <p>The derive writes paths that start with <code>ignite_core</code> and <code>orbit_orm</code>, so the app needs both crates. A date field needs <code>chrono</code> with its <code>serde</code> feature. The app's CLI binary uses <code>dotenvy</code> to read <code>.env</code>.</p>
 
   <h2>Database URL and .env</h2>
-  <p>Ignite reads the connection URL from the <code>DATABASE_URL</code> environment variable, in the form <code>mysql://user:pass@host:port/db</code>. It builds the connection pool when the panel is created, and panics at startup if the variable is missing or the database cannot be reached.</p>
+  <p>Ignite reads the connection URL from the <code>DATABASE_URL</code> environment variable, in the form <code>mysql://user:pass@host:port/db</code>. <code>Ignite::new()</code> panics if the variable is missing. The connection is made when Rocket ignites, as an Orbit pool of 10 connections. If the database cannot be reached, the launch stops with an error.</p>
   <p>In development, put the variables in a <code>.env</code> file. <code>Ignite::new()</code> loads it automatically. A variable that is already set in the environment wins over the same name in <code>.env</code>, as in Laravel. Keep <code>DATABASE_URL</code> and <code>IGNITE_SECRET_KEY</code> only in <code>.env</code>, and keep that file out of git. Never commit a database password or a secret key.</p>
 
   <h2>Migrations</h2>
   <p>The panel's tables, including <code>users</code>, come from its migrations. Run them as an explicit step, before the first start and on every deploy:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- migrate</code></pre>
-  <p>The app does not migrate when it starts. Running the migrations again does nothing. Do not rely on <code>diesel migration run</code> for the panel's migrations: it cannot see them, because they are embedded in the <code>ignite-panel</code> crate. See <a href="/docs/deploying">Deploying</a> for the deploy steps.</p>
+  <p>The app does not migrate when it starts. Running the migrations again does nothing. The panel's migrations are embedded in the <code>ignite-panel</code> crate, not in the app's <code>migrations</code> folder, so the app's own migration tool does not see them. Use <code>ignite migrate</code> for them.</p>
+  <p><code>ignite migrate:status</code> lists each migration as Applied or Pending, and <code>ignite migrate:rollback</code> reverts the last batch: the migrations that one <code>ignite migrate</code> applied, last first, each with its <code>down.sql</code>. See <a href="/docs/deploying#rollback">Deploying</a>.</p>
+  <p>The panel records its migrations in Diesel's <code>__diesel_schema_migrations</code> table. The rows that Diesel wrote before the move to Orbit are batch 0. They are the history of the panel's schema and are not run again. A rollback that reaches batch 0 reverts those migrations too, and drops the panel's tables.</p>
 
   <h2>Attach the panel</h2>
   <p>Attach the panel to the Rocket build with the resources the app manages. The panel's routes mount when the app starts, under <code>/admin</code>. The app's own <code>account</code> route is guarded by the panel's <code>AdminUser</code>. See <a href="/docs/panel">Panel</a>:</p>

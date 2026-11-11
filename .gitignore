@@ -6,3 +6,4 @@
 .env
 .env.*
 .cargo/config.toml
+/.claude/
