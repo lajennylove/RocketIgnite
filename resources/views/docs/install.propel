@@ -44,7 +44,7 @@ propel_compiler = "0.2.0"</code></pre>
   <p>Ignite reads the connection URL from the <code>DATABASE_URL</code> environment variable, in the form <code>mysql://user:pass@host:port/db</code>. <code>Ignite::new()</code> panics if the variable is missing. The connection is made when Rocket ignites, as an Orbit pool of 10 connections. If the database cannot be reached, the launch stops with an error.</p>
   <p>In development, put the variables in a <code>.env</code> file. <code>Ignite::new()</code> loads it automatically. A variable that is already set in the environment wins over the same name in <code>.env</code>, as in Laravel. Keep <code>DATABASE_URL</code> and <code>IGNITE_SECRET_KEY</code> only in <code>.env</code>, and keep that file out of git. Never commit a database password or a secret key.</p>
 
-  <h2>Migrations</h2>
+  <h2 id="migrations">Migrations</h2>
   <p>The panel's tables, including <code>users</code>, come from its migrations. Run them as an explicit step, before the first start and on every deploy:</p>
   <pre class="line-numbers"><code class="language-bash">cargo run --bin ignite -- migrate</code></pre>
   <p>The app does not migrate when it starts. Running the migrations again does nothing. The panel's migrations are embedded in the <code>ignite-panel</code> crate, not in the app's <code>migrations</code> folder, so the app's own migration tool does not see them. Use <code>ignite migrate</code> for them.</p>
@@ -56,11 +56,7 @@ propel_compiler = "0.2.0"</code></pre>
   <pre class="line-numbers"><code class="language-rust">mod article;
 mod author;
 mod reports;
-mod views_dir;
-mod migrate;
 mod order;
-mod mount;
-mod schema;
 mod tag;
 
 use ignite_panel::Ignite;
@@ -105,11 +101,4 @@ fn rocket() -&gt; rocket::Rocket&lt;rocket::Build&gt; {
   <p>Set <code>IGNITE_SECRET_KEY</code> before you start the app. It signs the sign-in and flash cookies, and a release build stops at startup without it. See <a href="/docs/deploying">Deploying</a> for the release build and the other steps of a deploy, and <a href="/docs/panel">Panel</a> for how to create a key.</p>
   <p>A release build renders compiled views, so the panel's views are part of the binary and a deployed app needs no view files. An app with views of its own renders them compiled in release, as the panel does. See <a href="/docs/views">Views</a>.</p>
 
-  <h2>Developing this docs site</h2>
-  <p>The steps below are for developing this documentation site, in its own repository. An app does not need them. The site needs Node.js 22.12 or newer, or 20.19 or newer, for Vite and Tailwind.</p>
-  <pre class="line-numbers"><code class="language-bash">npm install
-npm run build   # once: writes public/build, which Rocket serves
-npm run dev     # Vite, in one terminal
-cargo run       # the Rocket app, in another</code></pre>
-  <p>Rocket will not start until <code>public/build</code> exists, so run <code>npm run build</code> once first. In a debug build, views are read from <code>resources/views/</code> at runtime, so an edit shows on the next reload. A release build compiles them, so rebuild after an edit.</p>
 @endsection
