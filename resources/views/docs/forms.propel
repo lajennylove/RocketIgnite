@@ -26,10 +26,12 @@
 
   <h2>Required fields</h2>
   <p>A field marked <code>required</code> shows an asterisk after its label. The asterisk is only a hint: the resource's <code>validate</code> must reject a blank value. The derive does this for you, and a hand-written resource calls <code>check_required</code>, which trims the value and records the message <code>&lt;label&gt; is required.</code> if it is blank.</p>
-  <p>A value made only of spaces counts as blank, and so does a field the form did not send. A derived field that is not an <code>Option</code> is required on create and on edit: a blank one is refused, the form shows again with the message, and nothing is saved. A checkbox is never blank, because an empty box is false.</p>
+  <p>A value made only of spaces counts as blank, and so does a required field the form did not send. A derived field that is not an <code>Option</code> is required on create and on edit: a blank one is refused, the form shows again with the message, and nothing is saved. A checkbox is never blank, because an empty box is false.</p>
 
   <h2 id="clearing">Clearing an optional field on edit</h2>
+  <p><strong>Ignite 0.3.0: not yet at the pinned revision.</strong> This section describes Ignite 0.3.0, which is not published yet. The revision <code>d3d1975</code> that <a href="/docs/install">Installation</a> pins does not have it. At that revision, a derived resource skips a blank optional field on edit and keeps the old value.</p>
   <p>A field that is not required may be left blank. On create, a blank optional field is saved as NULL. On edit, it is saved as NULL too, so emptying a field and saving clears the stored value, as WordPress clears a field you empty and update. This is how a derived resource and a runtime resource save, since Ignite 0.3.0. Before 0.3.0, a derived resource skipped a blank optional field on edit and kept the old value.</p>
+  <p>The panel's forms send every field. A request that does not send an optional field at all, such as a partial form an app posts itself, leaves that field as it is on edit. A checkbox that is not sent is unticked, so false.</p>
   <p>A password is the exception: a blank password on edit keeps the stored hash. See <a href="#passwords">Passwords</a>. A hand-written resource decides what its own <code>update</code> writes. See <a href="/docs/resources#saving">Resources</a>.</p>
 
   <h2>Validation errors</h2>
