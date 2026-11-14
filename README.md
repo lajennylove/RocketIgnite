@@ -11,7 +11,7 @@ The site is a Rocket app with Propel views. It does not depend on the Ignite cra
 - Rocket: git revision `3a54d079`
 - Propel: git revision `09c8a02ba0f3ed75b02c7f3d36b5a0e6f4d047b7` (`propel_rocket`, `propel_runtime`, `propel_macros`, and `propel_compiler` as a build dependency)
 
-The install page for apps pins Ignite to a git revision, and Orbit, Rocket and Propel to their crates.io releases, the same ones Ignite resolves. This site's own pins are in `Cargo.toml`.
+The install page for apps pins Ignite to its git tag (v0.3.0), and Orbit, Rocket and Propel to their crates.io releases, the same ones Ignite resolves. This site's own pins are in `Cargo.toml`.
 
 ## Developing this site
 
