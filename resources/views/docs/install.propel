@@ -17,7 +17,7 @@
   <p>This page documents the Orbit port of Ignite, at revision <code>d3d1975</code> of its main branch. Ignite is not on crates.io, so its pin is a revision. Use the same pins as Ignite, so the app builds one copy of each crate:</p>
   <ul>
     <li>Orbit (<code>orbit-orm</code>) 0.1.0, from crates.io. Orbit is the database layer, and the models derive its <code>OrbitModel</code>.</li>
-    <li>Ignite, from git, at revision <code>d3d1975</code>: <code>ignite-core</code> and <code>ignite-panel</code>.</li>
+    <li>Ignite, from git, at revision <code>d3d1975</code>: <code>ignite-core</code> and <code>ignite-panel</code>. This revision is before Ignite 0.3.0. The 0.3.0 release will update this pin when it is published; until then, keep <code>d3d1975</code>. Upgrading to 0.3.0 has breaking changes: owned <code>FieldErrors</code> keys, NULL for an optional field cleared on edit, and the runtime field-name rule. See <a href="/docs/resources#saving">Resources</a> and the Ignite changelog.</li>
     <li>Rocket and Propel, from crates.io: <code>rocket</code> 0.5.2, <code>propel_rocket</code> and <code>propel_runtime</code> 0.2.0, and <code>propel_compiler</code> 0.2.0 as a build dependency. Ignite resolves these from crates.io, so the app must use the same releases. A git pin of either would build a second copy, and the panel's views would not match the app's.</li>
   </ul>
   <p>Diesel is no longer used. Ignite does not need a MariaDB client library to build.</p>

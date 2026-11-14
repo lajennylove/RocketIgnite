@@ -5,7 +5,7 @@
 
 @section('content')
   <h1>{{ $title }}</h1>
-  <p>A resource connects a database table to the panel. The panel lists, creates, edits and deletes its rows. A resource is a Rust type that implements the <code>IgniteResource</code> trait. You can write the impl by hand, or let <code>#[derive(IgniteResource)]</code> write it from an Orbit model.</p>
+  <p>A resource connects a database table to the panel. The panel lists, creates, edits and deletes its rows. A resource is a Rust type that implements the <code>IgniteResource</code> trait. You can write the impl by hand, or let <code>#[derive(IgniteResource)]</code> write it from an Orbit model. A resource can also be defined by data while the app runs: see <a href="#runtime-resources">Runtime resources</a>.</p>
 
   <h2>Address and name</h2>
   <p>Four constants name the resource:</p>
@@ -45,7 +45,7 @@ pub struct Article {
     pub published_on: Option&lt;chrono::NaiveDate&gt;,
 }</code></pre>
   <p>The model's own attributes belong to Orbit. <code>#[orbit(table = "...")]</code> names the table, and when it is left out, Orbit derives the table name from the struct. <code>#[orbit(primary_key = "...")]</code> names the key column when it is not <code>id</code>. On a field, <code>#[orbit(column = "...")]</code> names a column that differs from the field name, <code>#[orbit(skip)]</code> keeps a field out of the table, so it gets its default value when a row is read, and <code>#[orbit(fillable)]</code> allows the column to be written.</p>
-  <p>Every field of the form is written on a create and on an update, so mark each one <code>#[orbit(fillable)]</code>. Orbit refuses to write a column that is not fillable, and the save fails with its <code>NotFillable</code> error. The primary key is not in the form, so it needs no mark.</p>
+  <p>Every field of the form is written on a create and on an update, so mark each one <code>#[orbit(fillable)]</code>. See <a href="#saving">Saving and clearing a field</a> for what a blank field writes. Orbit refuses to write a column that is not fillable, and the save fails with its <code>NotFillable</code> error. The primary key is not in the form, so it needs no mark.</p>
 
   <p>The struct attributes are:</p>
   <ul>
@@ -101,6 +101,16 @@ pub struct Author {
     pub password: String,
 }</code></pre>
   <p>The derive stores the argon2 hash from <code>ignite_core::hash_password</code>, the same function the panel's sign-in uses. The password is required on create. On edit, a blank password is optional, and it keeps the stored hash. Password fields are not list columns, and the edit form never shows the stored value. The derive refuses a password field that is not a <code>String</code> or an <code>Option</code> of one, at compile time.</p>
+
+  <h2 id="saving">Saving and clearing a field</h2>
+  <p>A derived resource writes every field of the form on create and on update. A blank field that is an <code>Option</code> is saved as NULL, on edit as on create. So a user clears an optional value, such as the <code>published_on</code> date above, by emptying the field and saving the edit form.</p>
+  <ul>
+    <li>An <code>Option</code> field left blank: NULL, on create and on edit.</li>
+    <li>A password left blank: required on create; on edit it is not written, so the stored hash is kept. This is the one exception.</li>
+    <li>A field that is not an <code>Option</code>: required, on create and on edit. A blank one is refused with <code>&lt;label&gt; is required.</code> and nothing is saved.</li>
+    <li>A checkbox: never blank. Unticked is <code>false</code>.</li>
+  </ul>
+  <p>Since Ignite 0.3.0. Before 0.3.0, a blank optional field was skipped on edit and kept its old value, so an optional field could not be cleared. An existing value now changes to NULL when a user saves the edit form with that field blank. A <a href="#runtime-resources">runtime resource</a> saves a blank optional field the same way.</p>
 
   <h2>Write a resource by hand</h2>
   <p>A hand-written resource implements the trait itself. The trait's query methods are async, and they take the app's Orbit <code>Database</code>. This one manages a <code>tags</code> table with a choice field, a search and a sort, a dashboard card and a dashboard table of its newest tags:</p>
@@ -267,6 +277,11 @@ impl IgniteResource for Tag {
         let (Some(name), Some(kind)) = (name, kind) else {
             return Err(errors);
         };
+        if name.chars().count() &gt; 50 {
+            // A rule of the resource's own: the key is the field name, as a String.
+            errors.insert("name".to_string(), "Name must be at most 50 characters.".to_string());
+            return Err(errors);
+        }
         if !KIND.check_choice(kind, KINDS, &amp;mut errors) {
             return Err(errors);
         }
@@ -286,9 +301,79 @@ impl IgniteResource for Tag {
     <li><code>widgets</code>, the dashboard cards, and <code>latest_records</code> with <code>latest</code>, the dashboard table of the newest records. See <a href="/docs/widgets">Widgets</a>.</li>
     <li><code>options</code>, the choices of a <code>Lookup</code> field by its name, which the panel calls when it shows the form and when it checks a submitted value. The default has no choices. A derived resource writes it for <code>options = ...</code> and <code>belongs_to = ...</code>, and a hand-written resource with such a field implements it.</li>
   </ul>
-  <p>A hand-written resource with a password must hash it with <code>ignite_core::hash_password</code> itself, and override <code>validate_update</code> so that a blank password keeps the stored hash on edit.</p>
+  <p>A hand-written resource with a password must hash it with <code>ignite_core::hash_password</code> itself, and override <code>validate_update</code> so that a blank password keeps the stored hash on edit. A hand-written resource also decides what its <code>update</code> writes for a blank optional field. To match a derived resource, write NULL.</p>
+
+  <h3 id="field-errors">Field errors</h3>
+  <p><code>validate</code> returns a <code>FieldErrors</code> when the form is refused. It is a <code>HashMap&lt;String, String&gt;</code>: the key is the field name and the value is the message shown under that field, as Laravel's <code>MessageBag</code> keys its messages by field. The checks on <code>Field</code>, such as <code>check_required</code>, <code>check_whole_number</code>, <code>check_decimal</code>, <code>check_date</code>, <code>check_datetime</code> and <code>check_choice</code>, record their message under the field's name. A rule of your own inserts the field name as a <code>String</code>, with <code>.to_string()</code> on a literal, as the name check in the example does. Reading a message takes a <code>&amp;str</code>: <code>errors.get("name")</code>.</p>
+  <p>Before Ignite 0.3.0, the keys were <code>&amp;'static str</code>. A resource written for 0.2 adds <code>.to_string()</code> to each literal key, and nothing else changes.</p>
   <p>The <code>Record</code> is what the database returns. It must serialize to JSON with an <code>id</code> key holding the primary key as a number, and with keys named after the fields and columns. The panel builds the row links from <code>id</code>.</p>
 
   <h2>Add it to the panel</h2>
   <p>Pass each resource type to the panel builder, as <a href="/docs/install">Installation</a> shows: <code>.resource::&lt;Article&gt;()</code>, <code>.resource::&lt;Tag&gt;()</code> and <code>.resource::&lt;Author&gt;()</code>.</p>
+
+  <h2 id="runtime-resources">Runtime resources</h2>
+  <p>A resource can also be defined by data while the app runs, such as a custom post type that a site owner creates in the admin. A runtime resource is a <code>RuntimeResource</code> value, not a Rust type. Its slug, titles, fields and columns are owned values, so the app can load them from the database, and its rows come from a <code>RuntimeData</code> that the app implements. The panel serves it at <code>/admin/&lt;slug&gt;</code> with the same list, forms, checks and delete action as a static resource, and shows it in the navigation, from the next request on.</p>
+  <pre class="line-numbers"><code class="language-rust">use ignite_core::{
+    register_runtime, unregister_runtime, ColumnDef, FieldDef, FieldKindDef, RuntimeResource,
+};
+
+register_runtime(
+    RuntimeResource::new("books", "Books", "Book", BookData)
+        .field(FieldDef {
+            name: "title".into(),
+            label: "Title".into(),
+            kind: FieldKindDef::Text,
+            required: true,
+        })
+        .field(FieldDef {
+            name: "pages".into(),
+            label: "Pages".into(),
+            kind: FieldKindDef::Number,
+            required: false,
+        })
+        .column(ColumnDef {
+            key: "title".into(),
+            label: "Title".into(),
+            sortable: true,
+            searchable: true,
+        })
+        .per_page(50),
+)?;
+ignite_panel::register_runtime_permissions(&amp;db, "books").await?;
+
+// Later, when the site owner deletes the post type:
+unregister_runtime("books")?;</code></pre>
+
+  <h3>The definition</h3>
+  <ul>
+    <li><code>RuntimeResource::new(slug, title, singular, data)</code> starts a resource with no fields or columns, 20 rows per page. <code>.field(...)</code> and <code>.column(...)</code> add one after the others, and <code>.per_page(n)</code> sets the rows per page.</li>
+    <li><code>FieldDef</code> (<code>name</code>, <code>label</code>, <code>kind</code>, <code>required</code>) is the owned twin of <code>Field</code>, and <code>FieldKindDef</code> of <code>FieldKind</code>: <code>Text</code>, <code>Textarea</code>, <code>Password</code>, <code>Number</code>, <code>Decimal(step)</code>, <code>Checkbox</code>, <code>Select(choices)</code>, <code>Lookup</code>, <code>Date</code> and <code>DateTime</code>. <code>FieldDef::from(field)</code> converts a static <code>Field</code>.</li>
+    <li><code>ColumnDef</code> (<code>key</code>, <code>label</code>, <code>sortable</code>, <code>searchable</code>) is the owned twin of <code>Column</code>. <code>ColumnDef::from(column)</code> converts a static one.</li>
+  </ul>
+  <p>A field name must be a lowercase identifier: lowercase ASCII letters, digits and <code>_</code>, starting with a letter, and at most 64 bytes (<code>MAX_FIELD_NAME</code>), as a column name is. The slug is lowercase letters, digits, <code>-</code> and <code>_</code>, as one URL segment. Definitions are owned, so registering a resource again after an edit keeps nothing of the old one, and unregistering it frees all of it.</p>
+
+  <h3>The data</h3>
+  <p><code>RuntimeData</code> has the queries of <code>IgniteResource</code>, with rows as JSON maps (<code>Row</code>, a <code>serde_json::Map</code>): <code>list</code>, <code>find</code>, <code>create</code>, <code>update</code>, <code>delete</code>, and <code>options</code> for a <code>Lookup</code> field, which defaults to no choices. Each method returns a <code>RuntimeFuture</code>, so write the body as <code>Box::pin(async move { ... })</code>. Ignite assumes no table layout: a custom post type can keep its rows in a shared <code>posts</code> table and its values in a meta table. A row needs a numeric <code>id</code>, and a key for each field and column it shows.</p>
+  <p>The panel validates the form before it calls <code>create</code> or <code>update</code>, with the same checks and messages as a static resource, and passes one key per field: text as a string, a number as an integer, a decimal as a number, a checkbox as <code>true</code> or <code>false</code>, a date as <code>"YYYY-MM-DD"</code>, a date and time as <code>"YYYY-MM-DD HH:MM:SS"</code>, and a password as its hash. A blank optional field is <code>null</code>, on create and on edit, so <code>update</code> should store NULL and clear the value, as a derived resource does (see <a href="#saving">Saving and clearing a field</a>). A password left blank on edit is left out of the row, so the stored hash is kept. Form errors are keyed by the field's name in <code>FieldErrors</code>.</p>
+  <p>A unique-index violation shows as <code>&lt;label&gt; is already taken.</code> only when the index is named <code>{slug}_{field}_unique</code>, as for a static resource. A <code>RuntimeData</code> that stores values elsewhere should check uniqueness itself.</p>
+
+  <h3>Registering and removing</h3>
+  <ul>
+    <li><code>register_runtime(resource)</code> adds the resource. It returns a <code>RuntimeError</code> when the definition or the slug is refused.</li>
+    <li><code>unregister_runtime(slug)</code> removes it. From the next request on, it is gone from the navigation and its routes answer 404. Its permission rows stay, so the grants come back if it is registered again.</li>
+    <li><code>runtime_resource(slug)</code> and <code>runtime_resources()</code> read the registry.</li>
+  </ul>
+  <p>The variants of <code>RuntimeError</code> are:</p>
+  <ul>
+    <li><code>InvalidSlug(slug)</code>: the slug is not one URL segment of lowercase letters, digits, <code>-</code> and <code>_</code>.</li>
+    <li><code>SlugTaken(slug)</code>: a static resource, another runtime resource, or one of the panel's own pages (such as <code>login</code>) has the slug.</li>
+    <li><code>InvalidFieldName { slug, field }</code>: a field name is not a lowercase identifier of at most 64 bytes.</li>
+    <li><code>DuplicateField { slug, field }</code>: two fields have the same name.</li>
+    <li><code>NotRegistered(slug)</code>: <code>unregister_runtime</code> found no runtime resource at the slug.</li>
+  </ul>
+
+  <h3>Permissions</h3>
+  <p>A runtime resource has the same five abilities as a static one: <code>&lt;slug&gt;.viewAny</code>, <code>.view</code>, <code>.create</code>, <code>.update</code> and <code>.delete</code>. Call <code>ignite_panel::register_runtime_permissions(&amp;db, slug).await</code> right after <code>register_runtime</code>, in the same request, so the permission rows exist at once and a role can be granted them. Running it again changes nothing. It refuses a slug that is not registered, and creates nothing.</p>
+  <p>If the app does not call it, the panel creates the rows itself on the next signed-in request, before it reads the user's abilities. The rows stay when the resource is removed. See <a href="/docs/panel">Panel</a> for roles and permissions.</p>
+  <p>A runtime resource has no dashboard cards or dashboard table yet.</p>
 @endsection

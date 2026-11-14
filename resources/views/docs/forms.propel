@@ -26,12 +26,17 @@
 
   <h2>Required fields</h2>
   <p>A field marked <code>required</code> shows an asterisk after its label. The asterisk is only a hint: the resource's <code>validate</code> must reject a blank value. The derive does this for you, and a hand-written resource calls <code>check_required</code>, which trims the value and records the message <code>&lt;label&gt; is required.</code> if it is blank.</p>
+  <p>A value made only of spaces counts as blank, and so does a field the form did not send. A derived field that is not an <code>Option</code> is required on create and on edit: a blank one is refused, the form shows again with the message, and nothing is saved. A checkbox is never blank, because an empty box is false.</p>
+
+  <h2 id="clearing">Clearing an optional field on edit</h2>
+  <p>A field that is not required may be left blank. On create, a blank optional field is saved as NULL. On edit, it is saved as NULL too, so emptying a field and saving clears the stored value, as WordPress clears a field you empty and update. This is how a derived resource and a runtime resource save, since Ignite 0.3.0. Before 0.3.0, a derived resource skipped a blank optional field on edit and kept the old value.</p>
+  <p>A password is the exception: a blank password on edit keeps the stored hash. See <a href="#passwords">Passwords</a>. A hand-written resource decides what its own <code>update</code> writes. See <a href="/docs/resources#saving">Resources</a>.</p>
 
   <h2>Validation errors</h2>
-  <p>When <code>validate</code> returns errors, the panel shows the form again with the values the user typed, a message under each field that has one, and the status 422. Nothing is written to the database. A derived field that cannot be read, such as a number that is not a whole number, gets its own message, such as <code>Price must be a whole number.</code></p>
+  <p>When <code>validate</code> returns errors, a <code>FieldErrors</code> map from each field name (a <code>String</code>) to its message, the panel shows the form again with the values the user typed, a message under each field that has one, and the status 422. Nothing is written to the database. A derived field that cannot be read, such as a number that is not a whole number, gets its own message, such as <code>Price must be a whole number.</code></p>
   <p>A value that clashes with a unique index is also a field error. A second user with the same email, for example, shows <code>Email is already taken.</code> under the email field, with the status 422. Any other database error is a 500.</p>
 
-  <h2>Passwords</h2>
+  <h2 id="passwords">Passwords</h2>
   <p>A password field is never filled in on the edit page. On create, a password is required. On edit, a blank password keeps the stored hash, and a new one is hashed with argon2 on save. A hand-written resource hashes with <code>ignite_core::hash_password</code> itself, and overrides <code>validate_update</code> to allow a blank password on edit. See <a href="/docs/resources#passwords">Resources</a>.</p>
 
   <h2>Forms and tokens</h2>
